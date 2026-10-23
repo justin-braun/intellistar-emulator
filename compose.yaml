@@ -1,0 +1,12 @@
+# Run Retrocast at http://localhost:8080
+#   docker compose up -d            uses the published image (builds it locally if it can't be pulled)
+#   docker compose up -d --build    builds from this folder, for local changes
+name: retrocast
+
+services:
+  retrocast:
+    image: ghcr.io/justin-braun/retrocast:latest
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped

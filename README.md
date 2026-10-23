@@ -23,10 +23,18 @@ Only US locations are supported, since the weather data comes from the National 
 3. Enter a ZIP code or airport code and click **Start**
 4. Press F11 for full screen
 
-### Run it with Docker
-1. `docker build -t retrocast .`
-2. `docker run -p 8080:80 retrocast`
+### Run it with Docker Compose
+1. Download or clone this repository
+2. `docker compose up -d`
 3. Visit http://localhost:8080
+
+This uses the published image, `ghcr.io/justin-braun/retrocast`, and restarts it automatically if the machine reboots. To build from your local copy instead, for example after making changes, run `docker compose up -d --build`. To change the port, edit `8080` in [compose.yaml](compose.yaml).
+
+### Run it with Docker
+1. `docker run -d -p 8080:80 --restart unless-stopped ghcr.io/justin-braun/retrocast`
+2. Visit http://localhost:8080
+
+To build the image yourself instead: `docker build -t retrocast .` then `docker run -p 8080:80 retrocast`.
 
 ## Looping
 To turn looping on or off, click the Retrocast logo in the top left corner while the forecast is playing. When looping, the page reloads at the end of each forecast and fetches new data, about once a minute.

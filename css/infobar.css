@@ -8,14 +8,16 @@
   font-size: 0px;
 }
 
-#infobar-twc-logo{
+#infobar-logo{
   position: relative;
   transition: top .4s;
   top: 100%;
+  height: 100%;
   float: left;
+  cursor: pointer;
 }
 
-#infobar-local-logo{
+#infobar-wordmark{
   position: relative;
   transition: top .4s;
   top: 100%;
@@ -42,12 +44,12 @@
   margin: auto 25px;
 }
 
-#infobar-twc-logo.shown{
+#infobar-logo.shown{
   transition-delay: 300ms;
   top: 0px;
 }
 
-#infobar-local-logo.shown{
+#infobar-wordmark.shown{
   transition-delay: 150ms;
   top: 0px;
 }
@@ -62,12 +64,12 @@
   top: 0px;
 }
 
-#infobar-twc-logo.hidden{
+#infobar-logo.hidden{
   transition-delay: 0ms;
   top: -105%;
 }
 
-#infobar-local-logo.hidden{
+#infobar-wordmark.hidden{
   transition-delay: 100ms;
   top: -100%;
 }

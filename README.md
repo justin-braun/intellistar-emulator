@@ -1,60 +1,57 @@
-# intellistar-emulator
-A web application that displays weather information in the same visual presentation as the cable headend unit [Intellistar](https://en.wikipedia.org/wiki/IntelliStar).
+# Retrocast
 
-## Overview
-This is a local forecast segment that airs on The Weather Channel called the "Local on the 8s". The name is because it airs at timeslots that end in "8" (9:28, 2:48, etc.). The forecast is approximately a minute long and provides information on current and forecasted weather conditions. This type of forecast started in 1982 using WeatherStar units. It was later upgraded to Intellistar in 2003 and received various graphic changes over the years. This emulator uses the style that started in 2013.
+A retro local forecast for any US ZIP code. Retrocast plays a minute-long forecast loop in the style of the classic cable TV local weather segment: current conditions, radar, the forecast and a 7 day outlook. No API keys or accounts needed.
 
-## Instructions
-## Option 1 (easier)
-1. Visit: <https://qconrad.github.io/intellistar-emulator/>.
-2. Enter zip code
-3. Click start
-4. Press F11 for fullscreen
-
-## Option 2 (more customizable)
-1. Extract all contents into folder
-2. Run index.html in Google Chrome
-3. Enter zip code
-4. Click start
-5. Press F11 for fullscreen
-
-## Option 3 (Docker)
-1. `docker build -t intellistar-emulator .`
-2. `docker run -p 8080:80 intellistar-emulator`
-3. Visit: http://localhost:8080
-4. Enter zip code
-5. Click start
-6. Press F11 for fullscreen
+![Current conditions in Minneapolis](screenshots/current-conditions.jpg)
 
 ## Features
-Most of core animation and logic has been replicated including severe weather alerts, forecast descriptions, crawl text, and the Doppler radar map.
+- **Live current conditions** from the nearest National Weather Service station
+- **Forecast and 7 day outlook** from the NWS, with [Open-Meteo](https://open-meteo.com) filling in days past the NWS forecast range
+- **2 hour animated radar** with active watches, warnings and advisories drawn on the map in the official NWS hazard colors
+- **Severe weather alerts** shown at the start of the loop, with a zoomed radar for the location
+- **Backgrounds that match the forecast**: a photo of the location, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky)
+- **Looping** for kiosks and spare screens, with fresh data every cycle
+- **ZIP code or airport code** (like MSP or KMSP) locations
 
-Weather data comes from the [National Weather Service API](https://www.weather.gov/documentation/services-web-api) and postal codes are looked up with [Zippopotam.us](https://zippopotam.us), so no API key is needed. As a result only US locations are supported. The NWS forecast only reaches about 7 days out, so any outlook days it doesn't cover are filled in from [Open-Meteo](https://open-meteo.com) (also free, no key).
+Only US locations are supported, since the weather data comes from the National Weather Service.
 
-Backgrounds are photos from [Wikimedia Commons](https://commons.wikimedia.org): either the lead image of the nearest town's Wikipedia article, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky). The photographer and license are credited in the corner.
+## Getting started
+
+### Run it in a browser
+1. Download or clone this repository
+2. Open `index.html` in a modern browser (Chrome works best)
+3. Enter a ZIP code or airport code and click **Start**
+4. Press F11 for full screen
+
+### Run it with Docker
+1. `docker build -t retrocast .`
+2. `docker run -p 8080:80 retrocast`
+3. Visit http://localhost:8080
 
 ## Looping
-To enable or disable looping, click on the TWC logo in the info-bar in the top-left corner of the emulator.
+To turn looping on or off, click the Retrocast logo in the top left corner while the forecast is playing. When looping, the page reloads at the end of each forecast and fetches new data, about once a minute.
 
-To get looping working properly, you may (as of Chrome M66) have to go to chrome://flags#autoplay-policy (Autoplay Policy) and change it to `User gesture is required for cross-origin iframes` or `No user gesture is required`  
+If the music doesn't play when looping, the browser is blocking autoplay. In Chrome you can allow it at `chrome://flags#autoplay-policy` by choosing `No user gesture is required`.
+
+## Customizing
+Click **Show advanced options** on the start screen to change the crawl text that scrolls along the bottom and the greeting shown at the start.
 
 ## Screenshots
-![Screenshot 1](/screenshots/1.png)
+![Start screen](screenshots/startup.jpg)
 
-![Screenshot 2](/screenshots/2.png)
+![Radar with active alerts in Albuquerque](screenshots/radar-alerts.jpg)
 
-![Screenshot 3](/screenshots/3.png)
+![7 day forecast](screenshots/7-day-forecast.jpg)
 
-![Screenshot 4](/screenshots/4.png)
+## Data and credits
+Retrocast uses free services that don't need a key:
+- Weather, forecasts, alerts and zone shapes: [National Weather Service API](https://www.weather.gov/documentation/services-web-api)
+- Radar: [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu) NEXRAD mosaic
+- Map imagery, borders and places: [Esri](https://www.esri.com)
+- Extended outlook: [Open-Meteo](https://open-meteo.com)
+- ZIP code lookup: [Zippopotam.us](https://zippopotam.us)
+- Background photos: [Wikimedia Commons](https://commons.wikimedia.org) and [Wikipedia](https://www.wikipedia.org), credited on screen
 
-![Screenshot 5](/screenshots/5.png)
+Retrocast started as a fork of [intellistar-emulator](https://github.com/qconrad/intellistar-emulator) by qconrad and its contributors, and keeps its MIT license.
 
-![Screenshot 6](/screenshots/6.png)
-
-![Screenshot 7](/screenshots/7.png)
-
-![Screenshot 8](/screenshots/8.png)
-
-![Screenshot 9](/screenshots/9.png)
-
-![Screenshot 10](/screenshots/10.png)
+Retrocast is an independent project and isn't affiliated with any broadcaster or with the National Weather Service.

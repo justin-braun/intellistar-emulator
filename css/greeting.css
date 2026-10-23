@@ -51,7 +51,7 @@
   transition: left .4s;
 }
 
-#local-logo-container{
+#greeting-logo-container{
   position: absolute;
   top: 50%;
   left: 0px;
@@ -66,13 +66,13 @@
   left: 35%;
 }
 
-#local-logo-container.shown{
+#greeting-logo-container.shown{
   transition-delay: 400ms;
   top: 0px;
   height: 100%;
 }
 
-#local-logo-container.hidden{
+#greeting-logo-container.hidden{
   transition-duration: 1s;
   top: -100%;
   left: 200px;

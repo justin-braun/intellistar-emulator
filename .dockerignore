@@ -7,4 +7,3 @@ Dockerfile
 .dockerignore
 .gitignore
 screenshots/
-docs/

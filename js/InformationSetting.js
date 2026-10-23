@@ -157,10 +157,10 @@ function setInitialPositionCurrentPage(){
 function getPageLogoFileName(subPageName){
   switch (subPageName) {
     case "single-alert-page":
-      return "8logo.svg";
+      return "alert.svg";
 
     case "multiple-alerts-page":
-      return "8logo.svg";
+      return "alert.svg";
 
     case "current-page":
       return "thermometer.svg";

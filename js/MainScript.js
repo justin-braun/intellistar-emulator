@@ -32,7 +32,6 @@ window.onload = function () {
   if (!CONFIG.loop) {
     getElement("settings-container").style.display = 'block';
     (getElement('airport-code-button').checked ? getElement('airport-code-text') : getElement('zip-code-text')).focus();
-    guessZipCode();
   }
 }
 
@@ -138,24 +137,24 @@ function hideSettings(){
 function executeGreetingPage(){
   getElement('background-image').classList.remove("below-screen");
   getElement('content-container').classList.add('shown');
-  getElement('infobar-twc-logo').classList.add('shown');
+  getElement('infobar-logo').classList.add('shown');
   getElement('hello-text').classList.add('shown');
   getElement('hello-location-text').classList.add('shown');
   getElement('greeting-text').classList.add('shown');
-  getElement('local-logo-container').classList.add("shown");
+  getElement('greeting-logo-container').classList.add("shown");
   setTimeout(clearGreetingPage, 2500);
 }
 
 function clearGreetingPage(){
   // Remove transition delay from greeting
   getElement('greeting-text').classList.remove('shown');
-  getElement('local-logo-container').classList.remove('shown');
+  getElement('greeting-logo-container').classList.remove('shown');
 
   // Hide everything
   getElement('greeting-text').classList.add('hidden');
   getElement('hello-text-container').classList.add('hidden');
   getElement("hello-location-container").classList.add("hidden");
-  getElement("local-logo-container").classList.add("hidden");
+  getElement("greeting-logo-container").classList.add("hidden");
 
   schedulePages();
   loadInfoBar();
@@ -313,7 +312,7 @@ function endSequence(){
   clearInfoBar();
 }
 
-function twcLogoClick() {
+function logoClick() {
   var alertMessageShown = getElement('alert-message').classList.contains('shown');
   if(alertMessageShown) return;
   var loopStatus = localStorage.getItem('loop');
@@ -329,8 +328,8 @@ function twcLogoClick() {
 }
 
 function clearInfoBar(){
-  getElement("infobar-twc-logo").classList.add("hidden");
-  getElement("infobar-local-logo").classList.add("hidden");
+  getElement("infobar-logo").classList.add("hidden");
+  getElement("infobar-wordmark").classList.add("hidden");
   getElement("infobar-location-container").classList.add("hidden");
   getElement("infobar-time-container").classList.add("hidden");
   setTimeout(clearElements, 200);
@@ -352,11 +351,11 @@ function showEnding(){
     stayUpdated();
   }
   else{
-    itsAmazingOutThere();
+    thanksForWatching();
   }
 }
 
-function itsAmazingOutThere(){
+function thanksForWatching(){
   getElement('amazing-text').classList.add('extend');
   getElement("amazing-logo").classList.add('shown');
   getElement("amazing-container").classList.add('hide');
@@ -384,7 +383,7 @@ function reloadPage(){
 }
 
 function loadInfoBar(){
-  getElement("infobar-local-logo").classList.add("shown");
+  getElement("infobar-wordmark").classList.add("shown");
   getElement("infobar-location-container").classList.add("shown");
   getElement("infobar-time-container").classList.add("shown");
 }
@@ -569,7 +568,7 @@ function calculateCrawlSpeed() {
 
 function showLoopMessage(){
   var loopStatus = ((CONFIG.loop) ? 'enabled' : 'disabled');
-  alert("Looping " + loopStatus + ", click TWC logo to toggle");
+  alert("Looping " + loopStatus + ", click the logo to toggle");
 }
 
 function hideAlertMessage(){

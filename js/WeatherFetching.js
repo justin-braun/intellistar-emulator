@@ -1,34 +1,3 @@
-function guessZipCode(){
-  // Skip geolookup until replaced with TWC (wunderground api dead)
-  return;
-
-  var zipCodeElement = getElement("zip-code-text");
-  // Before filling with auto zip, check and see if
-  // there is already an input
-  if(zipCodeElement.value != ""){
-    return;
-  }
-
-  // always use wunderground API for geolookup
-  // only valid equivalent is GET v3/location/search
-  // TODO: use TWC API GET v3/location/search instead of wunderground geolookup
-  fetch(`https://api.wunderground.com/api/${CONFIG.secrets.wundergroundAPIKey}/geolookup/q/autoip.json`)
-    .then(function(response) {
-      //check for error
-      if (response.status !== 200) {
-        console.log("zip code request error");
-        return;
-      }
-      response.json().then(function(data) {
-        // Only fill zip if the user didn't touch
-        // the box while the zip was fetching
-        if(zipCodeElement.value == ""){
-          zipCodeElement.value = data.location.zip;
-        }
-      });
-    })
-}
-
 function fetchAlerts(){
   var alertCrawl = "";
   fetch(`https://api.weather.gov/alerts/active?point=${latitude},${longitude}`)
@@ -160,7 +129,7 @@ function fetchOpenMeteoOutlook(outlookDates, incomplete){
     .catch((err) => console.warn("Open-Meteo error, outlook will be incomplete", err))
 }
 
-// WMO weather codes used by Open-Meteo, mapped to a TWC icon code and a short phrase
+// WMO weather codes used by Open-Meteo, mapped to a condition icon code (assets/icons/conditions) and a short phrase
 const WMO_ICONS = {
   0: [32, 'Sunny'],
   1: [34, 'Mostly Sunny'],
@@ -360,7 +329,7 @@ function nwsPressureTrend(obs){
 }
 
 // Map an NWS icon url (e.g. https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium)
-// to a TWC icon code and a short phrase. Uses the first condition in the url.
+// to a condition icon code (assets/icons/conditions) and a short phrase. Uses the first condition in the url.
 const NWS_ICONS = {
   skc: [32, 31, 'Sunny', 'Clear'],
   few: [34, 33, 'Mostly Sunny', 'Mostly Clear'],

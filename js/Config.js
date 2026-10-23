@@ -1,5 +1,5 @@
 window.CONFIG = {
-  crawl: `Thanks to all the contributors of this project. While it's not completely finished, the community effort has made this possible. Stars, contributions, and feedback are welcome and appreciated. Thanks for trying out this emulator.`,
+  crawl: `Welcome to Retrocast, a retro local forecast powered by the National Weather Service. Forecasts, radar and alerts update every time the forecast plays. Thanks for watching.`,
   greeting: 'This is your weather',
   units: 'e', // e = English (imperial), m = Metric, h = Hybrid (UK)
   unitField: 'imperial', // This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)

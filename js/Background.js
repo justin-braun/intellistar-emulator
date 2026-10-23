@@ -7,7 +7,7 @@ const BACKGROUND_WIDTH = 1920;
 const BACKGROUND_FALLBACK = 'https://picsum.photos/1920/1080/?random';
 const BACKGROUND_CACHE_MS = 24 * 60 * 60 * 1000;
 
-// Commons categories for each group of TWC icon codes, and how often to prefer them over a
+// Commons categories for each group of condition icon codes (assets/icons/conditions), and how often to prefer them over a
 // location photo. Clear days (32, 34, 36) have no good category, so they always use the location.
 const CONDITION_BACKGROUNDS = [
   // The broader categories (storms, quality images of rain or snow) include damage photos and

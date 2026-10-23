@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <link rel="shortcut icon" type="image/png" href="assets/logos/favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg"/>
   <link rel="stylesheet" type="text/css" href="css/text.css">
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/page.css">
@@ -29,7 +29,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>IntelliSTAR Emulator</title>
+  <title>Retrocast</title>
 </head>
 
 <body>
@@ -41,8 +41,8 @@
 
     <!-- Top Information Bar -->
     <div id="infobar-container">
-      <img id="infobar-twc-logo" src="assets/logos/twc.svg" onclick="twcLogoClick();" />
-      <img id="infobar-local-logo" src="assets/logos/local.svg" />
+      <img id="infobar-logo" src="assets/logos/retrocast-mark.svg" onclick="logoClick();" alt="Retrocast" />
+      <img id="infobar-wordmark" src="assets/logos/retrocast-wordmark.svg" alt="" />
       <div id="infobar-location-container" class="infobar-item-container">
         <div id="infobar-location-text" class="regular-text infobar-text"></div>
       </div>
@@ -58,8 +58,8 @@
     <div id="content-frame">
       <!-- Greeting Page -->
       <div id="greeting-page">
-        <div id="local-logo-container">
-          <img src="assets/logos/local-white-box.svg" />
+        <div id="greeting-logo-container">
+          <img src="assets/logos/retrocast-box.svg" alt="" />
         </div>
 
         <div id="hello-text-container">
@@ -351,13 +351,13 @@
 
     <!-- Its Amazing Out There -->
     <div id="amazing-container">
-      <div class="regular-text" id="amazing-text">#ItsAmazingOutThere</div>
-      <img src="assets/logos/twc_color.svg" id="amazing-logo">
+      <div class="regular-text" id="amazing-text">Thanks for watching</div>
+      <img src="assets/logos/retrocast-mark-color.svg" id="amazing-logo" alt="Retrocast">
     </div>
 
     <!-- Stay updated -->
     <div id="updated-container">
-      <img src="assets/logos/twc_color.svg" id="updated-logo">
+      <img src="assets/logos/retrocast-mark-color.svg" id="updated-logo" alt="Retrocast">
       <div class="regular-text" id="updated-text">For more information, stay on</div>
     </div>
 
@@ -397,8 +397,8 @@
   <div id="settings-container" style="display: none;">
     <div id="settings-prompt">
       <div class="settings-header">
-        <img class="settings-logo" src="assets/logos/twc.svg" alt="The Weather Channel"/>
-        <img class="settings-logo" src="assets/logos/local.svg" alt="Local on the 8s"/>
+        <img class="settings-logo" src="assets/logos/retrocast-mark.svg" alt=""/>
+        <img class="settings-logo" src="assets/logos/retrocast-wordmark.svg" alt="Retrocast"/>
       </div>
       <h1 class="settings-title">Your local forecast</h1>
       <p class="settings-subtitle">Enter a US ZIP code or airport to start.</p>
@@ -421,7 +421,7 @@
       <!-- Start button and advanced options toggle are added by CONFIG.load -->
       <div id="advanced-settings-options" class="hidden"></div>
 
-      <p class="settings-footer">Click the TWC logo during playback to toggle looping.</p>
+      <p class="settings-footer">Click the Retrocast logo during playback to toggle looping.</p>
     </div>
   </div>
 

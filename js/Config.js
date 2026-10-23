@@ -1,17 +1,10 @@
 window.CONFIG = {
   crawl: `Thanks to all the contributors of this project. While it's not completely finished, the community effort has made this possible. Stars, contributions, and feedback are welcome and appreciated. Thanks for trying out this emulator.`,
   greeting: 'This is your weather',
-  language: 'en-US', // Supported in TWC API
-  countryCode: 'US', // Supported in TWC API (for postal key)
-  units: 'e', // Supported in TWC API (e = English (imperial), m = Metric, h = Hybrid (UK)),
-  unitField: 'imperial', // Supported in TWC API. This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)
+  units: 'e', // e = English (imperial), m = Metric, h = Hybrid (UK)
+  unitField: 'imperial', // This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)
   loop: false,
   locationMode: "POSTAL",
-  secrets: {
-    // Possibly deprecated key: See issue #29
-    // twcAPIKey: 'd522aa97197fd864d36b418f39ebb323'
-    twcAPIKey: 'e1f10a1e78da46f5b10a1e78da96f525'
-  },
 
   // Config Functions (index.html settings manager)
   locationOptions:[],
@@ -40,10 +33,6 @@ window.CONFIG = {
         localStorage.setItem(opt.id, args[opt.id])
       }
     })
-    args['countryCode'] = getElement('country-code-text').value
-    if (!currentLoop) {
-      localStorage.setItem('countryCode', args['countryCode'])
-    }
     CONFIG.options.forEach((opt) => {
       args[opt.id] = getElement(`${opt.id}-text`).value
       if (!currentLoop) {
@@ -54,34 +43,36 @@ window.CONFIG = {
     if (currentLoop) {
       if (localStorage.getItem('crawlText')) CONFIG.crawl = localStorage.getItem('crawlText')
       if (localStorage.getItem('greetingText')) CONFIG.greeting = localStorage.getItem('greetingText')
-      if (localStorage.getItem('countryCode')) CONFIG.countryCode = localStorage.getItem('countryCode')
     } else {
       if (args.crawlText !== '') CONFIG.crawl = args.crawlText
       if (args.greetingText !== '') CONFIG.greeting = args.greetingText
-      if (args.countryCode !== '') CONFIG.countryCode = args.countryCode
       if (args.loop === 'y') CONFIG.loop = true
     }
     
-    if (args['airport-code-button']==true){ 
-      CONFIG.locationMode="AIRPORT" 
-      if(args['airport-code'].length==0){
-        alert("Please enter an airport code")
+    if (args['airport-code-button']==true){
+      CONFIG.locationMode="AIRPORT"
+      if(!currentLoop && !/^[A-Za-z0-9]{3,4}$/.test(args['airport-code'])){
+        alert("Enter a 3 or 4 letter airport code, like MSP or KMSP")
         return
       }
-    } 
-    else { 
-      CONFIG.locationMode="POSTAL" 
-      if(!currentLoop && args['zip-code'].length==0){
-        alert("Please enter a postal code")
+    }
+    else {
+      CONFIG.locationMode="POSTAL"
+      if(!currentLoop && !/^\d{5}$/.test(args['zip-code'])){
+        alert("Enter a 5 digit ZIP code")
         return
       }
 
     }
-    
+    if (!currentLoop) {
+      localStorage.setItem('location-mode', CONFIG.locationMode)
+    }
+
     zipCode = args['zip-code'] || localStorage.getItem('zip-code')
     airportCode = args['airport-code'] || localStorage.getItem('airport-code')
-    
+
     CONFIG.unitField = CONFIG.units === 'm' ? 'metric' : (CONFIG.units === 'h' ? 'uk_hybrid' : 'imperial')
+    setSettingsLoading(true);
     fetchCurrentWeather();
   },
   load: () => {
@@ -90,48 +81,54 @@ window.CONFIG = {
 
     //Advanced Options Setup
     CONFIG.options.forEach((option) => {
-      //<div class="regular-text settings-item settings-text">Zip Code</div>
-      let label = document.createElement('div')
-        label.classList.add('strong-text', 'settings-item', 'settings-text', 'settings-padded')
-        label.style.textAlign='left'
+      let label = document.createElement('label')
+      label.classList.add('settings-label')
       label.appendChild(document.createTextNode(option.name))
       label.id = `${option.id}-label`
-      //<input class="settings-item settings-text" type="text" id="zip-code-text">
+      label.htmlFor = `${option.id}-text`
       let textbox = document.createElement('textarea')
-      textbox.classList.add('settings-item', 'settings-text', 'settings-input')
-      textbox.type = 'text'
-      textbox.style.fontSize = '20px'
+      textbox.classList.add('settings-field')
       textbox.placeholder = option.desc
       textbox.id = `${option.id}-text`
-      textbox.style.maxWidth='320px'
-      textbox.style.minWidth='320px'
-      textbox.style.height='100px'
-      textbox.style.marginTop='10px'
       if (localStorage.getItem(option.id)) textbox.value = localStorage.getItem(option.id)
-      let br = document.createElement('br')
       advancedSettingsOptions.appendChild(label)
       advancedSettingsOptions.appendChild(textbox)
-      advancedSettingsOptions.appendChild(br)
-      //<br>
     })
 
-    let advancedButtonContainer = document.createElement('div')
-    advancedButtonContainer.classList.add('settings-container')
-    settingsPrompt.appendChild(advancedButtonContainer)
+    // Start button and advanced options toggle go above the advanced options
+    let btn = document.createElement('button')
+    btn.classList.add('start-button')
+    btn.id = 'submit-button'
+    btn.onclick = CONFIG.submit
+    btn.appendChild(document.createTextNode('Start'))
+    settingsPrompt.insertBefore(btn, advancedSettingsOptions)
     let advancedButton = document.createElement('button')
     advancedButton.innerHTML = "Show advanced options"
     advancedButton.id = "advanced-options-text"
     advancedButton.setAttribute('onclick', 'toggleAdvancedSettings()')
-    advancedButton.classList.add('regular-text', 'settings-input', 'button')
-    advancedButtonContainer.appendChild(advancedButton)
-    //<button class="setting-item settings-text" id="submit-button" onclick="checkZipCode();" style="margin-bottom: 10px;">Start</button>-->
-    let btn = document.createElement('button')
-    btn.classList.add('setting-item', 'settings-text', 'settings-input', 'button')
-    btn.id = 'submit-button'
-    btn.onclick = CONFIG.submit
-    btn.style = 'margin-bottom: 10px;'
-    btn.appendChild(document.createTextNode('Start'))
-    settingsPrompt.appendChild(btn)
+    advancedButton.setAttribute('aria-expanded', 'false')
+    advancedButton.classList.add('advanced-toggle')
+    settingsPrompt.insertBefore(advancedButton, advancedSettingsOptions)
+
+    // Fill in the last location used, and start with Enter
+    let zipCodeText = getElement('zip-code-text')
+    let airportCodeText = getElement('airport-code-text')
+    if (localStorage.getItem('zip-code')) zipCodeText.value = localStorage.getItem('zip-code')
+    if (localStorage.getItem('airport-code')) airportCodeText.value = localStorage.getItem('airport-code')
+    if (localStorage.getItem('location-mode') === 'AIRPORT') getElement('airport-code-button').checked = true
+    let updateLocationMode = function(focus) {
+      let airport = getElement('airport-code-button').checked
+      document.querySelector('.location-picker').classList.toggle('airport-mode', airport)
+      getElement('settings-error').innerHTML = ''
+      if (focus) (airport ? airportCodeText : zipCodeText).focus()
+    }
+    updateLocationMode(false)
+    getElement('zip-code-button').onchange = () => updateLocationMode(true)
+    getElement('airport-code-button').onchange = () => updateLocationMode(true)
+    ;[zipCodeText, airportCodeText].forEach((field) => field.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !btn.disabled) CONFIG.submit()
+    }))
+    zipCodeText.addEventListener('input', () => zipCodeText.value = zipCodeText.value.replace(/\D/g, ''))
     if (CONFIG.loop || localStorage.getItem('loop') === 'y') {
       CONFIG.loop = true;
       hideSettings();

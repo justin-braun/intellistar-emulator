@@ -16,6 +16,8 @@ var humidity;
 var dewPoint;
 var pressure;
 var pressureTrend;
+var nwsForecastUrl;
+var nwsRelativeLocation; // nearest town to the location, {city, state}
 var forecastNarrative = [];
 var forecastTemp = [];
 var forecastIcon = [];

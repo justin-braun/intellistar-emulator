@@ -10,6 +10,92 @@
 .radar-container{
   overflow: hidden;
 }
+
+.radar-map{
+  position: relative;
+  width: 1235px;
+  height: 525px;
+  overflow: hidden;
+  background-color: #1b2b4b;
+}
+
+.radar-layer{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.radar-tile{
+  position: absolute;
+  width: 256px;
+  height: 256px;
+}
+
+/* Dim the imagery so the radar stands out */
+.radar-imagery{
+  filter: brightness(0.75) saturate(0.8);
+}
+
+.radar-frame{
+  opacity: 0.8;
+  visibility: hidden;
+}
+
+.radar-alerts path{
+  stroke-width: 2px;
+  stroke-opacity: 0.9;
+}
+
+/* Watches and advisories often cover large areas, so keep them light */
+.radar-alerts .radar-alert-warning{
+  fill-opacity: 0.3;
+}
+
+.radar-alerts .radar-alert-other{
+  fill-opacity: 0.12;
+}
+
+.radar-legend{
+  position: absolute;
+  bottom: 22px;
+  left: 15px;
+  padding: 4px 12px;
+  font-size: 22px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.radar-legend-item{
+  line-height: 30px;
+}
+
+.radar-legend-swatch{
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  vertical-align: -2px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.radar-time{
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 2px 15px;
+  font-size: 36px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.radar-attribution{
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-family: sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
 .key{
   display: inline-block;
   float: right;

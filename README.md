@@ -19,16 +19,19 @@ This is a local forecast segment that airs on The Weather Channel called the "Lo
 5. Press F11 for fullscreen
 
 ## Option 3 (Docker)
-1. `docker run -p 8080:80 ghcr.io/qconrad/intellistar-emulator`
-2. Visit: http://localhost:8080
-3. Enter zip code
-4. Click start
-5. Press F11 for fullscreen
+1. `docker build -t intellistar-emulator .`
+2. `docker run -p 8080:80 intellistar-emulator`
+3. Visit: http://localhost:8080
+4. Enter zip code
+5. Click start
+6. Press F11 for fullscreen
 
 ## Features
 Most of core animation and logic has been replicated including severe weather alerts, forecast descriptions, crawl text, and the Doppler radar map.
 
-*Some of these features are temporarily not working due to the discontinuation of WU's API*
+Weather data comes from the [National Weather Service API](https://www.weather.gov/documentation/services-web-api) and postal codes are looked up with [Zippopotam.us](https://zippopotam.us), so no API key is needed. As a result only US locations are supported. The NWS forecast only reaches about 7 days out, so any outlook days it doesn't cover are filled in from [Open-Meteo](https://open-meteo.com) (also free, no key).
+
+Backgrounds are photos from [Wikimedia Commons](https://commons.wikimedia.org): either the lead image of the nearest town's Wikipedia article, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky). The photographer and license are credited in the corner.
 
 ## Looping
 To enable or disable looping, click on the TWC logo in the info-bar in the top-left corner of the emulator.

@@ -82,6 +82,10 @@ function setForecast(){
 
   for (var i = 0; i < 4; i++) {
     forecastNarrativeElement[i].innerHTML = forecastNarrative[i];
+    // NWS narratives can be long. About 200 characters fit at the default 52px,
+    // so shrink longer ones to fit the same area.
+    var narrativeLength = (forecastNarrative[i] || '').length;
+    forecastNarrativeElement[i].style.fontSize = narrativeLength > 200 ? Math.max(32, Math.floor(52 * Math.sqrt(200 / narrativeLength))) + 'px' : '';
     forecastTempElement[i].innerHTML = forecastTemp[i];
     forecastPrecipElement[i].innerHTML = forecastPrecip[i];
 

@@ -22,6 +22,8 @@
   <script src="js/Config.js"></script>
   <script src="js/MainScript.js"></script>
   <script src="js/WeatherFetching.js"></script>
+  <script src="js/Radar.js"></script>
+  <script src="js/Background.js"></script>
   <script src="js/InformationSetting.js"></script>
   <script src="js/Conditions.js"></script>
   <meta charset="UTF-8">
@@ -33,7 +35,9 @@
 <body>
   <div id="render-frame">
     <!--Nature Background image-->
-    <div id="background-image" class="below-screen"></div>
+    <div id="background-image" class="below-screen">
+      <div id="background-credit" style="display: none;"></div>
+    </div>
 
     <!-- Top Information Bar -->
     <div id="infobar-container">
@@ -392,39 +396,32 @@
   <!-- Settings Prompt -->
   <div id="settings-container" style="display: none;">
     <div id="settings-prompt">
-      <table style="width:350px">
-        <tbody>
-        
-          <!-- Locations won't be added programatically -->
-          <tr>
-            <td style="text-align: left;">
-              <input type="radio" id="airport-code-button" name='location-type' checked="false"/>
-              <label for="airport-code-button" class="strong-text settings-item settings-text settings-padded">Airport</label>
-            </td>
-            <td colspan="2">
-              <input type="text" id="airport-code-text" style="font-size: 20px; width:180px" 
-              placeholder="ATL or KATL" class="settings-item settings-text settings-input"/>
-            </td>
-          </tr>
+      <div class="settings-header">
+        <img class="settings-logo" src="assets/logos/twc.svg" alt="The Weather Channel"/>
+        <img class="settings-logo" src="assets/logos/local.svg" alt="Local on the 8s"/>
+      </div>
+      <h1 class="settings-title">Your local forecast</h1>
+      <p class="settings-subtitle">Enter a US ZIP code or airport to start.</p>
 
-          <tr>
-            <td style="text-align: left;">
-              <input type="radio" id="zip-code-button" name='location-type' checked="true"/>
-              <label for="zip-code-button" class="strong-text settings-item settings-text settings-padded">Postal</label>
-            </td>
-            <td>
-              <input type="text" id="zip-code-text" style="font-size: 20px; width:100px" 
-              placeholder="00000" class="settings-item settings-text settings-input"/>
-            </td>
-            <td>
-              <input type="text" id="country-code-text" style="font-size: 20px; width:50px;" 
-              placeholder="US" value="US" maxlength="2" class="settings-item settings-text settings-input"/>
-            </td>
-          </tr>
+      <!-- Locations won't be added programatically. The radios come first so CSS can show the matching input. -->
+      <div class="location-picker">
+        <input type="radio" id="zip-code-button" name="location-type" checked/>
+        <input type="radio" id="airport-code-button" name="location-type"/>
+        <div class="segmented" role="radiogroup" aria-label="Location type">
+          <label for="zip-code-button">ZIP Code</label>
+          <label for="airport-code-button">Airport</label>
+        </div>
+        <input type="text" id="zip-code-text" class="settings-field location-field zip-field" placeholder="e.g. 55401"
+          inputmode="numeric" maxlength="5" autocomplete="postal-code" aria-label="ZIP code"/>
+        <input type="text" id="airport-code-text" class="settings-field location-field airport-field" placeholder="e.g. MSP or KMSP"
+          maxlength="4" autocapitalize="characters" spellcheck="false" aria-label="Airport code"/>
+      </div>
+      <div id="settings-error" role="alert"></div>
 
-        </tbody>
-      </table>
-      <div id="advanced-settings-options" class="settings-container hidden"></div>
+      <!-- Start button and advanced options toggle are added by CONFIG.load -->
+      <div id="advanced-settings-options" class="hidden"></div>
+
+      <p class="settings-footer">Click the TWC logo during playback to toggle looping.</p>
     </div>
   </div>
 

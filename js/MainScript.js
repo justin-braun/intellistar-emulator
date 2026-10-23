@@ -27,11 +27,11 @@ window.onload = function () {
   CONFIG.addOption('greetingText', 'Greeting Text', 'Message (or joke) that appears at the start')
   CONFIG.load();
   preLoadMusic();
-  setMainBackground();
   resizeWindow();
   setClockTime();
   if (!CONFIG.loop) {
     getElement("settings-container").style.display = 'block';
+    (getElement('airport-code-button').checked ? getElement('airport-code-text') : getElement('zip-code-text')).focus();
     guessZipCode();
   }
 }
@@ -50,6 +50,20 @@ function toggleAdvancedSettings(){
     advancedSettingsOptions.classList.add('hidden')
     advancedOptionsText.innerHTML = 'Show advanced options'
   }
+  advancedOptionsText.setAttribute('aria-expanded', advancedSettingsHidden)
+}
+
+function settingsVisible(){
+  return getElement('settings-container').style.display == 'block' && !getElement('settings-prompt').classList.contains('hide');
+}
+
+// Disable the start button while the weather loads
+function setSettingsLoading(loading){
+  let button = getElement('submit-button');
+  if (!button) return;
+  button.disabled = loading;
+  button.textContent = loading ? 'Loading forecast…' : 'Start';
+  if (loading) getElement('settings-error').innerHTML = '';
 }
 
 function preLoadMusic(){
@@ -95,10 +109,6 @@ function setInformation(){
   setTimelineEvents();
   hideSettings();
   setTimeout(startAnimation, 1000);
-}
-
-function setMainBackground(){
-  getElement('background-image').style.backgroundImage = 'url(https://picsum.photos/1920/1080/?random';
 }
 
 function checkStormMusic(){
@@ -252,10 +262,12 @@ function resetProgressBar(){
 
 function startRadar(){
   getElement('radar-container').appendChild(radarImage);
+  radarImage.start();
 }
 
 function startZoomedRadar(){
   getElement('zoomed-radar-container').appendChild(zoomedRadarImage);
+  zoomedRadarImage.start();
 }
 
 function loadCC(){
@@ -565,6 +577,12 @@ function hideAlertMessage(){
 }
 
 function alert(message){
+  // Show errors in the settings prompt while it's on screen, such as an invalid ZIP code
+  if (settingsVisible()) {
+    getElement('settings-error').innerHTML = message;
+    setSettingsLoading(false);
+    return;
+  }
   getElement('alert-message').innerHTML = message;
   getElement('alert-message').classList.add('shown');
   setTimeout(hideAlertMessage, 2000);

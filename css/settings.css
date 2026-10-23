@@ -4,21 +4,39 @@
   position: fixed;
   top: 0;
   left: 0;
+  background: radial-gradient(ellipse at top, rgba(40, 70, 130, 0.55), rgba(5, 10, 25, 0.85));
+  transition: opacity 600ms;
+}
+
+/* Fade the backdrop out with the prompt */
+#settings-container:has(#settings-prompt.hide){
+  opacity: 0;
 }
 
 #settings-prompt{
   transition: top 1s, opacity 200ms;
   top: 50%;
   transform: translateY(-50%);
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-  background-color: rgb(50, 50, 65);
-  border: 1px solid black;
-  font-size: 40px;
-  margin: 0 auto;
-  width: max-content;
   position: relative;
-  overflow: hidden;
-  text-align: center;
+  margin: 0 auto;
+  width: 420px;
+  max-width: calc(100% - 32px);
+  /* Scroll inside the card if advanced options make it taller than the window */
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  box-sizing: border-box;
+  padding: 32px 32px 24px;
+  border-radius: 18px;
+  background-color: rgba(16, 24, 44, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: akkoLight, sans-serif;
+  color: white;
+  text-align: left;
 }
 
 #settings-prompt.hide{
@@ -26,59 +44,189 @@
   opacity: 0;
 }
 
+.settings-header{
+  display: flex;
+  gap: 4px;
+  height: 46px;
+  margin-bottom: 24px;
+}
+
+.settings-logo{
+  height: 100%;
+}
+
+.settings-title{
+  margin: 0;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.settings-subtitle{
+  margin: 6px 0 22px;
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Location type toggle. The radios are hidden and their labels act as the segments. */
+.location-picker input[type="radio"]{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented{
+  display: flex;
+  padding: 4px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.segmented label{
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 7px;
+  text-align: center;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background-color 150ms, color 150ms;
+}
+
+.segmented label:hover{
+  color: white;
+}
+
+/* airport-mode is set by CONFIG.load when the selected radio changes */
+.location-picker:not(.airport-mode) label[for="zip-code-button"],
+.location-picker.airport-mode label[for="airport-code-button"]{
+  background-color: #2f6fd6;
+  color: white;
+}
+
+.location-picker:has(#zip-code-button:focus-visible) label[for="zip-code-button"],
+.location-picker:has(#airport-code-button:focus-visible) label[for="airport-code-button"]{
+  outline: 2px solid #8fb8ff;
+}
+
+.location-picker:not(.airport-mode) .airport-field,
+.location-picker.airport-mode .zip-field{
+  display: none;
+}
+
+.settings-field{
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-family: inherit;
+  font-size: 18px;
+  outline: none;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.settings-field::placeholder{
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.settings-field:focus{
+  border-color: #5b95f0;
+  box-shadow: 0 0 0 3px rgba(47, 111, 214, 0.35);
+}
+
+.location-field{
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+.airport-field{
+  text-transform: uppercase;
+}
+
+.airport-field::placeholder{
+  text-transform: none;
+}
+
+#settings-error{
+  min-height: 22px;
+  margin-top: 8px;
+  font-size: 15px;
+  color: #ff8a80;
+}
+
+.start-button{
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background-color: #2f6fd6;
+  color: white;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.start-button:hover{
+  background-color: #3a7ce6;
+}
+
+.start-button:focus-visible{
+  outline: 2px solid #8fb8ff;
+  outline-offset: 2px;
+}
+
+.start-button:disabled{
+  background-color: #2a4f8f;
+  cursor: default;
+}
+
+.advanced-toggle{
+  display: block;
+  margin: 16px auto 0;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.advanced-toggle:hover{
+  color: white;
+}
+
 #advanced-settings-options.hidden{
   display: none;
 }
 
-#advanced-options-text{
+.settings-label{
+  display: block;
+  margin: 16px 0 6px;
   font-size: 15px;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.settings-container{
-  margin-left: 10px;
-  margin-right: 10px;
+textarea.settings-field{
+  height: 80px;
+  resize: vertical;
+  font-size: 16px;
 }
 
-.settings-item{
-  width: 100%;
-  margin: 0 auto;
-  height: 35px;
+.settings-footer{
+  margin: 18px 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
 }
-
-.location-item{
-  width: 200px;
-  margin-left: 20px;
-  height: 35px;
-}
-
-.settings-padded {
-    margin-top: 20px;
-}
-
-.settings-text{
-  font-size: 30px;
-}
-
-.settings-input{
-  background-color: #21212b;
-  border: 1px solid black;
-  color: white;
-  outline: none;
-  transition: border 500ms;
-}
-
-.settings-input:focus{
-  border: 1px solid #b7b7c8;
-}
-
-.button{
-  transition: 100ms background-color;
-}
-
-.button:hover{
-  background-color: #595973;
-}
-
 
 #alert-message{
   background-color: rgba(0,0,0, 0.50);

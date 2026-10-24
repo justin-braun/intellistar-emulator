@@ -1,0 +1,44 @@
+/* Hourly forecast page: one column per hour, like the 7 day outlook */
+#hourly-columns{
+  display: flex;
+  gap: 5px;
+}
+
+.hourly-hour{
+  flex: 1;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  text-align: center;
+}
+
+.hourly-time{
+  margin-top: 10px;
+  font-size: 40px;
+  white-space: nowrap;
+}
+
+.hourly-icon{
+  display: block;
+  width: 130px;
+  height: 130px;
+  margin: 10px auto 0;
+}
+
+.hourly-temp{
+  line-height: 1;
+  font-size: 80px;
+  margin-top: 5px;
+}
+
+.hourly-precip{
+  font-size: 40px;
+  margin-top: 10px;
+  color: #9fd3ff;
+}
+
+.hourly-condition{
+  margin: 10px 8px 0;
+  font-size: 30px;
+  line-height: 1.15;
+}

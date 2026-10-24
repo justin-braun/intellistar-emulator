@@ -81,12 +81,43 @@ function fetchForecast(){
         setOutlookDay(i, day.temperature, night ? night.temperature : null, icon && icon.phrase, icon && icon.code)
         if (!night) incomplete.push(i)
       }
-      fetchOpenMeteoOutlook(outlookDates, incomplete).then(fetchRadarImages);
+      fetchOpenMeteoOutlook(outlookDates, incomplete).then(fetchHourlyForecast).then(fetchRadarImages);
     })
     .catch(function(err) {
       alert("Could not load the forecast from the National Weather Service (check the console)")
       console.error(err)
     });
+}
+
+// The next few hours from the NWS hourly forecast, for the hourly page.
+// If it can't be loaded, hourlyForecast stays empty and the page is skipped.
+function fetchHourlyForecast(){
+  hourlyForecast = [];
+  if (!nwsForecastHourlyUrl) return Promise.resolve();
+  return fetch(`${nwsForecastHourlyUrl}?units=${CONFIG.units === 'e' ? 'us' : 'si'}`)
+    .then(function(response) {
+      if (response.status !== 200) throw new Error(`hourly forecast request error ${response.status}`);
+      return response.json();
+    })
+    .then(function(data) {
+      let now = Date.now();
+      hourlyForecast = data.properties.periods
+        .filter((p) => new Date(p.endTime).getTime() > now)
+        .slice(0, HOURLY_FORECAST_HOURS)
+        .map(function(p) {
+          let icon = nwsIcon(p.icon);
+          // startTime is in the location's local time, like 2026-10-23T22:00:00-05:00
+          let hour = parseInt(p.startTime.slice(11, 13), 10);
+          return {
+            time: `${hour % 12 || 12} ${hour < 12 ? 'AM' : 'PM'}`,
+            temperature: p.temperature,
+            icon: icon ? icon.code : 'na',
+            phrase: icon ? icon.phrase : p.shortForecast,
+            precipitation: (p.probabilityOfPrecipitation && p.probabilityOfPrecipitation.value) || 0,
+          };
+        });
+    })
+    .catch((err) => console.warn("Hourly forecast error, the hourly page will be skipped", err));
 }
 
 function setOutlookDay(i, high, low, phrase, icon){
@@ -253,6 +284,7 @@ function fetchNWSObservations(){
     })
     .then(function(data) {
       nwsForecastUrl = data.properties.forecast
+      nwsForecastHourlyUrl = data.properties.forecastHourly
       nwsRelativeLocation = data.properties.relativeLocation.properties
       return fetch(data.properties.observationStations).then((response) => response.json())
     })

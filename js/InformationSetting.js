@@ -128,6 +128,34 @@ function setOutlook(){ // Also known as 7day page
   }
 }
 
+// One column per hour for the hourly page
+function setHourly(){
+  let columns = getElement('hourly-columns');
+  columns.innerHTML = '';
+  hourlyForecast.forEach(function(hour) {
+    let column = document.createElement('div');
+    column.className = 'hourly-hour';
+    let time = document.createElement('div');
+    time.className = 'strong-text hourly-time';
+    time.textContent = hour.time;
+    let icon = new Image();
+    icon.className = 'hourly-icon';
+    icon.src = 'assets/icons/conditions/' + hour.icon + '.svg';
+    let temperature = document.createElement('div');
+    temperature.className = 'regular-text hourly-temp';
+    temperature.textContent = hour.temperature + '°';
+    let precipitation = document.createElement('div');
+    precipitation.className = 'regular-text hourly-precip';
+    precipitation.textContent = hour.precipitation + '%';
+    let condition = document.createElement('div');
+    condition.className = 'regular-text hourly-condition';
+    // One word per line, and split Thunderstorms like the 7 day outlook does, so it fits the column
+    condition.innerHTML = hour.phrase.split(' ').join('<br/>').replace('Thunderstorm', 'Thunder-<br/>storm');
+    [time, icon, temperature, precipitation, condition].forEach((element) => column.appendChild(element));
+    columns.appendChild(column);
+  });
+}
+
 function setAlertPage(){
   if(alerts.length === 0)
     return;
@@ -185,5 +213,8 @@ function getPageLogoFileName(subPageName){
 
     case "7day-page":
       return "week.svg";
+
+    case "hourly-page":
+      return "clock.svg";
   }
 }

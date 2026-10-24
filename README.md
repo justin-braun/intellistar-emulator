@@ -6,6 +6,7 @@ A retro local forecast for any US ZIP code. Retrocast plays a minute-long foreca
 
 ## Features
 - **Live current conditions** from the nearest National Weather Service station
+- **Hourly forecast** for the next 8 hours, with temperature and chance of rain
 - **Forecast and 7 day outlook** from the NWS, with [Open-Meteo](https://open-meteo.com) filling in days past the NWS forecast range
 - **2 hour animated radar** with county lines, city names and active watches, warnings and advisories drawn on the map in the official NWS hazard colors
 - **Severe weather alerts** shown at the start of the loop, with a zoomed radar for the location

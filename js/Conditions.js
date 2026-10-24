@@ -17,7 +17,9 @@ var dewPoint;
 var pressure;
 var pressureTrend;
 var nwsForecastUrl;
+var nwsForecastHourlyUrl;
 var nwsRelativeLocation; // nearest town to the location, {city, state}
+var hourlyForecast = []; // [{time, temperature, icon, phrase, precipitation}]
 var forecastNarrative = [];
 var forecastTemp = [];
 var forecastIcon = [];

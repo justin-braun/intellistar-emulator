@@ -73,7 +73,7 @@ Retrocast uses free services that don't need a key:
 
 Bundled assets:
 - Font: [Encode Sans Semi Condensed](https://fonts.google.com/specimen/Encode+Sans+Semi+Condensed) by The Encode Project Authors, under the SIL Open Font License ([fonts/OFL.txt](fonts/OFL.txt))
-- Music: public domain tracks from [FreePD.com](https://archive.org/details/freepd) and an original jingle, listed in [assets/music/CREDITS.md](assets/music/CREDITS.md)
+- Music: public domain tracks from [FreePD.com](https://archive.org/details/freepd), listed in [assets/music/CREDITS.md](assets/music/CREDITS.md)
 
 Retrocast started as a fork of [intellistar-emulator](https://github.com/qconrad/intellistar-emulator) by qconrad and its contributors, and keeps its MIT license.
 

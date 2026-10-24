@@ -22,6 +22,3 @@ to 85 seconds with a fade out and loudness normalized for Retrocast.
 | 10.mp3 | Sloppy Bossa Loop | Kevin MacLeod |
 | 11.mp3 | Relaxing Ballad | Alexander Nakarada |
 | storm.mp3 | Patron Saint of Heists | Bryan Teoh |
-
-`jingle.mp3` is an original bell chime synthesized for Retrocast and is also dedicated
-to the public domain (CC0).

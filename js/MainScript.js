@@ -5,8 +5,10 @@ const SINGLE = [{name: "Alert", subpages: [{name: "single-alert-page", duration:
 const MULTIPLE = [{name: "Alerts", subpages: [{name: "multiple-alerts-page", duration: 7000}]},{name: "Now", subpages: [{name: "current-page", duration: 8000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
 const WEEKDAY = ["SUN",  "MON", "TUES", "WED", "THU", "FRI", "SAT"];
 
-const jingle = new Audio("assets/music/jingle.mp3")
 const MUSIC_TRACK_COUNT = 11; // assets/music/1.mp3 to 11.mp3, see assets/music/CREDITS.md
+const MUSIC_FADE_IN = 1500;
+const MUSIC_FADE_OUT = 2000; // the end of the sequence takes about 2.6 seconds
+const MUSIC_RESUME_WITHIN = 30000; // resume the last loop's track if it was saved this recently
 
 const crawlSpeedCasual = 10; // A normal reading pace, in characters per second
 const crawlSpeedFast = 20; // A fast reading pace, in characters per second
@@ -18,6 +20,7 @@ var currentLogo;
 var currentLogoIndex = 0;
 var pageOrder;
 var music;
+var musicTrack; // "1" to "11", or "storm"
 var musicStarted = false;
 
 window.onload = function () {
@@ -74,9 +77,63 @@ function setSettingsLoading(loading){
   if (loading) getElement('settings-error').innerHTML = '';
 }
 
+// When looping, the music continues from where the last loop left off, so it sounds like
+// one continuous piece instead of restarting with a new track every minute
 function preLoadMusic(){
-  var index = Math.floor(Math.random() * MUSIC_TRACK_COUNT) + 1;
-  music = new Audio("assets/music/" + index + ".mp3");
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('music-position'));
+    localStorage.removeItem('music-position');
+  } catch (err) {}
+  if (saved && Date.now() - saved.time < MUSIC_RESUME_WITHIN) {
+    loadTrack(saved.track, saved.position);
+    // Start right away instead of waiting for the weather, to keep the gap short
+    startMusic();
+  } else {
+    loadTrack(randomTrack());
+  }
+}
+
+function randomTrack(except){
+  let track;
+  do {
+    track = String(Math.floor(Math.random() * MUSIC_TRACK_COUNT) + 1);
+  } while (track === except && MUSIC_TRACK_COUNT > 1);
+  return track;
+}
+
+function loadTrack(track, position){
+  if (music) music.pause();
+  musicTrack = track;
+  // A media fragment starts playback at the saved position
+  music = new Audio("assets/music/" + track + ".mp3" + (position ? "#t=" + position.toFixed(1) : ""));
+  music.muted = isMuted();
+  // When a track finishes, go on to another one (or repeat the storm track)
+  music.onended = function() {
+    loadTrack(track === 'storm' ? 'storm' : randomTrack(track));
+    startMusic();
+  };
+}
+
+// Saves where the music is, for the next loop to continue from
+function saveMusicPosition(){
+  if (!music || !musicStarted) return;
+  try {
+    localStorage.setItem('music-position', JSON.stringify({track: musicTrack, position: music.currentTime, time: Date.now()}));
+  } catch (err) {}
+}
+
+function fadeMusic(target, duration){
+  if (!music) return;
+  let audio = music;
+  clearInterval(audio.fadeTimer);
+  let start = audio.volume;
+  let began = Date.now();
+  audio.fadeTimer = setInterval(function() {
+    let progress = Math.min(1, (Date.now() - began) / duration);
+    audio.volume = start + (target - start) * progress;
+    if (progress >= 1) clearInterval(audio.fadeTimer);
+  }, 50);
 }
 
 /* Set the timeline page order depending on time of day and if
@@ -119,25 +176,26 @@ function setInformation(){
   setTimeout(startAnimation, 1000);
 }
 
+// Switch to the storm track during storms, and back once they pass
 function checkStormMusic(){
-  if(currentCondition.toLowerCase().includes("storm")){
-    music= new Audio("assets/music/storm.mp3");
-  }
+  let storm = currentCondition.toLowerCase().includes("storm");
+  if (storm == (musicTrack === 'storm')) return;
+  loadTrack(storm ? 'storm' : randomTrack());
+  if (musicStarted) startMusic();
 }
 
 function startAnimation(){
   setInitialPositionCurrentPage();
-
-  jingle.muted = isMuted();
-  playAudio(jingle);
-  setTimeout(startMusic, 5000)
+  if (!musicStarted) startMusic();
   executeGreetingPage();
 }
 
 function startMusic(){
   musicStarted = true;
   music.muted = isMuted();
+  music.volume = 0;
   playAudio(music);
+  fadeMusic(1, MUSIC_FADE_IN);
 }
 
 // Browsers block audio that starts without a click, such as after a looping reload
@@ -159,7 +217,6 @@ function toggleMute(){
   try {
     localStorage.setItem('muted', muted ? 'y' : 'n');
   } catch (err) {}
-  jingle.muted = muted;
   if (music) music.muted = muted;
   // Unmuting is a click, so it can start music the browser blocked earlier
   if (!muted && musicStarted && music && music.paused) playAudio(music);
@@ -355,6 +412,7 @@ function scrollCC(){
 
 // Called at end of sequence. Animates everything out and shows ending text
 function endSequence(){
+  fadeMusic(0, MUSIC_FADE_OUT);
   clearInfoBar();
 }
 
@@ -429,6 +487,7 @@ function reloadPage(){
   if (!CONFIG.loop && location.search) {
     location.href = location.pathname;
   } else {
+    if (CONFIG.loop) saveMusicPosition();
     location.reload()
   }
 }

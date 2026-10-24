@@ -48,6 +48,9 @@ To start without typing, for example on a kiosk, open Retrocast with the locatio
 
 If the music doesn't play when looping, the browser is blocking autoplay. In Chrome you can allow it at `chrome://flags#autoplay-policy` by choosing `No user gesture is required`.
 
+## Music
+To mute or unmute the music, click the speaker button in the top right corner or press M. Retrocast remembers the setting, including while looping. If the browser blocked the music from starting on its own, clicking the button starts it.
+
 ## Customizing
 Click **Show advanced options** on the start screen to change the crawl text that scrolls along the bottom and the greeting shown at the start.
 

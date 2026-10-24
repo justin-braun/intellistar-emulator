@@ -18,6 +18,7 @@ var currentLogo;
 var currentLogoIndex = 0;
 var pageOrder;
 var music;
+var musicStarted = false;
 
 window.onload = function () {
 
@@ -31,9 +32,12 @@ window.onload = function () {
   resizeWindow();
   setClockTime();
   // Esc stops looping during playback, for screens without a mouse
+  // M mutes or unmutes the music, except while typing on the start screen
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && CONFIG.loop && !settingsVisible()) logoClick();
+    if ((e.key === 'm' || e.key === 'M') && !settingsVisible()) toggleMute();
   });
+  updateMuteButton();
   if (!CONFIG.started) {
     getElement("settings-container").style.display = 'block';
     (getElement('airport-code-button').checked ? getElement('airport-code-text') : getElement('zip-code-text')).focus();
@@ -124,13 +128,50 @@ function checkStormMusic(){
 function startAnimation(){
   setInitialPositionCurrentPage();
 
-  jingle.play();
+  jingle.muted = isMuted();
+  playAudio(jingle);
   setTimeout(startMusic, 5000)
   executeGreetingPage();
 }
 
 function startMusic(){
-  music.play();
+  musicStarted = true;
+  music.muted = isMuted();
+  playAudio(music);
+}
+
+// Browsers block audio that starts without a click, such as after a looping reload
+function playAudio(audio){
+  audio.play().catch((err) => console.warn("Audio didn't start, click the mute button to start the music", err));
+}
+
+function isMuted(){
+  try {
+    return localStorage.getItem('muted') === 'y';
+  } catch (err) {
+    return false;
+  }
+}
+
+// Mutes or unmutes the music, remembered across loops
+function toggleMute(){
+  let muted = !isMuted();
+  try {
+    localStorage.setItem('muted', muted ? 'y' : 'n');
+  } catch (err) {}
+  jingle.muted = muted;
+  if (music) music.muted = muted;
+  // Unmuting is a click, so it can start music the browser blocked earlier
+  if (!muted && musicStarted && music && music.paused) playAudio(music);
+  updateMuteButton();
+}
+
+function updateMuteButton(){
+  let muted = isMuted();
+  let button = getElement('mute-button');
+  button.classList.toggle('muted', muted);
+  button.setAttribute('aria-label', muted ? 'Unmute music' : 'Mute music');
+  button.title = (muted ? 'Unmute music' : 'Mute music') + ' (M)';
 }
 
 function hideSettings(){

@@ -83,3 +83,55 @@
   transition-delay: 300ms;
   top: -100%;
 }
+
+/* Music mute button in the top right corner, level with the info bar */
+#mute-button{
+  position: absolute;
+  top: 96px;
+  right: 60px;
+  z-index: 10;
+  width: 72px;
+  height: 72px;
+  padding: 16px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.35);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 150ms, background-color 150ms;
+}
+
+#mute-button:hover,
+#mute-button:focus-visible{
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#mute-button:focus-visible{
+  outline: 3px solid #8fb8ff;
+  outline-offset: 3px;
+}
+
+#mute-button svg{
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: white;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#mute-button .mute-speaker{
+  fill: white;
+}
+
+#mute-button .mute-cross,
+#mute-button.muted .mute-waves{
+  display: none;
+}
+
+#mute-button.muted .mute-cross{
+  display: inline;
+}

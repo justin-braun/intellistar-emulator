@@ -311,8 +311,11 @@ function fetchNWSObservations(){
 
       let temp = value(current, 'temperature')
       let wspd = value(current, 'windSpeed') ?? latest('windSpeed')
-      // No gust, wind chill or heat index means there isn't one, so only use the current observation for those
-      let gust = value(current, 'windGust')
+      // No wind chill or heat index means there isn't one, so only use the current observation for those.
+      // Gusts are left out of many of the 5 minute observations even on gusty days, so use the
+      // strongest gust in the last 30 minutes.
+      let gustCutoff = new Date(current.timestamp).getTime() - 30 * 60 * 1000
+      let gust = Math.max(0, ...obs.filter((o) => new Date(o.timestamp).getTime() >= gustCutoff).map((o) => value(o, 'windGust') ?? 0))
       currentTemperature = nwsTemperature(temp);
       currentCondition = described ? described.textDescription : '';
       windSpeed = wspd ? `${degreesToCardinal(latest('windDirection'))} ${nwsSpeed(wspd)} ${CONFIG.units === 'm' ? 'km/h' : 'mph'}` : 'CALM';

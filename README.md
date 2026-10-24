@@ -57,7 +57,7 @@ Click **Show advanced options** on the start screen to change the crawl text tha
 ## Screenshots
 ![Start screen](screenshots/startup.jpg)
 
-![Radar with active alerts in Albuquerque](screenshots/radar-alerts.jpg)
+![Radar with active alerts in Las Cruces](screenshots/radar-alerts.jpg)
 
 ![7 day forecast](screenshots/7-day-forecast.jpg)
 

@@ -23,6 +23,9 @@
   top: 100%;
   height: 100%;
   float: left;
+  /* The letters are cut out of the white box, so give them a solid color instead of
+     letting a bright background photo show through */
+  background-color: #1b2a47;
 }
 
 #infobar-time-container{

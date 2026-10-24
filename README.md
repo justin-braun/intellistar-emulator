@@ -6,6 +6,7 @@ A retro local forecast for any US ZIP code. Retrocast plays a minute-long foreca
 
 ## Features
 - **Live current conditions** from the nearest National Weather Service station
+- **Almanac** with sunrise and sunset, normal and record temperatures, precipitation this month and the next four moon phases
 - **Hourly forecast** for the next 8 hours, with temperature and chance of rain
 - **Forecast and 7 day outlook** from the NWS, with [Open-Meteo](https://open-meteo.com) filling in days past the NWS forecast range
 - **2 hour animated radar** with county lines, city names and active watches, warnings and advisories drawn on the map in the official NWS hazard colors
@@ -69,6 +70,8 @@ Retrocast uses free services that don't need a key:
 - Map imagery: [Esri](https://www.esri.com)
 - County and state lines and city names: [US Census Bureau TIGERweb](https://tigerweb.geo.census.gov)
 - Extended outlook: [Open-Meteo](https://open-meteo.com)
+- Normals, records and precipitation: NOAA's [Applied Climate Information System](https://www.rcc-acis.org) (ACIS), using ThreadEx stations. `tools/build-threadex-stations.py` rebuilds the bundled station list.
+- Sunrise, sunset and moon phases are calculated in the browser (moon phases from Jean Meeus's *Astronomical Algorithms*)
 - ZIP code lookup: [Zippopotam.us](https://zippopotam.us)
 - Background photos: [Wikimedia Commons](https://commons.wikimedia.org) and [Wikipedia](https://www.wikipedia.org), credited on screen
 

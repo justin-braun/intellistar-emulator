@@ -8,3 +8,4 @@ Dockerfile
 .gitignore
 screenshots/
 compose.yaml
+tools/

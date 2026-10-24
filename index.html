@@ -15,6 +15,7 @@
   <link rel="stylesheet" type="text/css" href="css/infobar.css">
   <link rel="stylesheet" type="text/css" href="css/outlook.css">
   <link rel="stylesheet" type="text/css" href="css/hourly.css">
+  <link rel="stylesheet" type="text/css" href="css/almanac.css">
   <link rel="stylesheet" type="text/css" href="css/radar.css">
   <link rel="stylesheet" type="text/css" href="css/settings.css">
   <link rel="stylesheet" type="text/css" href="css/timeline.css">
@@ -25,6 +26,7 @@
   <script src="js/WeatherFetching.js"></script>
   <script src="js/Radar.js"></script>
   <script src="js/Background.js"></script>
+  <script src="js/Almanac.js"></script>
   <script src="js/InformationSetting.js"></script>
   <script src="js/Conditions.js"></script>
   <meta charset="UTF-8">
@@ -302,6 +304,66 @@
           <div class="page-title-bar regular-text">Hourly Forecast</div>
         </div>
         <div id="hourly-columns" class="page-content-container"></div>
+      </div>
+
+      <!-- Almanac Page, filled in by setAlmanac -->
+      <div id="almanac-page" class="page-container regular-page-container">
+        <div>
+          <div class="page-title-bar regular-text">Almanac</div>
+        </div>
+        <div class="page-content-container almanac">
+          <div class="shaded-page-content almanac-table-panel">
+            <table class="almanac-table">
+              <tr>
+                <th></th>
+                <th id="almanac-day0" class="strong-text almanac-day">&nbsp;</th>
+                <th id="almanac-day1" class="strong-text almanac-day">&nbsp;</th>
+              </tr>
+              <tr>
+                <th class="strong-text">Sunrise</th>
+                <td id="almanac-sunrise0" class="regular-text">--</td>
+                <td id="almanac-sunrise1" class="regular-text">--</td>
+              </tr>
+              <tr>
+                <th class="strong-text">Sunset</th>
+                <td id="almanac-sunset0" class="regular-text">--</td>
+                <td id="almanac-sunset1" class="regular-text">--</td>
+              </tr>
+              <tr>
+                <th class="strong-text">Normal High</th>
+                <td id="almanac-normal-high0" class="regular-text">--</td>
+                <td id="almanac-normal-high1" class="regular-text">--</td>
+              </tr>
+              <tr>
+                <th class="strong-text">Normal Low</th>
+                <td id="almanac-normal-low0" class="regular-text">--</td>
+                <td id="almanac-normal-low1" class="regular-text">--</td>
+              </tr>
+              <tr>
+                <th class="strong-text">Record High</th>
+                <td id="almanac-record-high0" class="regular-text">--</td>
+                <td id="almanac-record-high1" class="regular-text">--</td>
+              </tr>
+              <tr>
+                <th class="strong-text">Record Low</th>
+                <td id="almanac-record-low0" class="regular-text">--</td>
+                <td id="almanac-record-low1" class="regular-text">--</td>
+              </tr>
+            </table>
+            <div id="almanac-source" class="almanac-source"></div>
+          </div>
+          <div class="almanac-side">
+            <div class="shaded-page-content almanac-moon-panel">
+              <div class="strong-text almanac-panel-title">Moon Phases</div>
+              <div id="almanac-moons" class="almanac-moons"></div>
+            </div>
+            <div class="shaded-page-content almanac-precip-panel">
+              <div id="almanac-precip-title" class="strong-text almanac-panel-title">Precipitation</div>
+              <div id="almanac-precip" class="regular-text almanac-precip">--</div>
+              <div id="almanac-precip-normal" class="regular-text almanac-precip-normal">&nbsp;</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 7 Day Outlook Page -->

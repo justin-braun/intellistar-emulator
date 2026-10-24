@@ -12,16 +12,14 @@ These add the most for the effort, or fix gaps people are likely to notice.
 |---|---|---|
 | Recover from failed data loads | When looping, a single NWS hiccup leaves the screen stuck. Retry, and fall back to the last good forecast. | M |
 | Rotate through several locations | A kiosk could show home, work and a cabin in turn, one per loop. | M |
-| Hourly forecast page | The NWS hourly forecast is already one request away. TV forecasts often show the next few hours. | M |
 | Units setting on the start screen | Metric support already exists in the code but can't be turned on without editing it. | S |
 | Default location for Docker | Set a ZIP code in `compose.yaml` so the container starts playing without a start link. | S |
 | Quiet hours | Mute the music automatically overnight, for displays in bedrooms or offices. | S |
 
 ## Forecast content
 
-- **Hourly forecast page** (M). Next 6 to 12 hours of temperature, sky and chance of rain. Source: NWS `forecast/hourly`, from the same grid point already used.
-- **Sunrise, sunset and moon phase** (S). A small almanac page. Calculated in the browser, or from Open-Meteo daily `sunrise`/`sunset`.
-- **Almanac: normals and records** (M). "Normal high 58°, record 81° in 1953." Source: NOAA's ACIS API (`data.rcc-acis.org`).
+Done: hourly forecast page (#3), almanac with sun times, normals, records and moon phases (#7).
+
 - **Air quality and UV index** (S). Source: Open-Meteo's air quality API (`air-quality-api.open-meteo.com`). Could be added to the current conditions page or get its own page.
 - **Nearby cities page** (M). Current temperatures for 6 to 8 towns around the location, like the classic regional observations screen. Source: the nearest NWS stations, using the Census city list the radar already loads.
 - **Better alert pages** (M). Show each alert's headline, timing and affected area instead of the raw text block, colored to match the radar's hazard colors.

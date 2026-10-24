@@ -285,6 +285,7 @@ function fetchNWSObservations(){
     .then(function(data) {
       nwsForecastUrl = data.properties.forecast
       nwsForecastHourlyUrl = data.properties.forecastHourly
+      nwsTimeZone = data.properties.timeZone
       nwsRelativeLocation = data.properties.relativeLocation.properties
       return fetch(data.properties.observationStations).then((response) => response.json())
     })

@@ -18,6 +18,7 @@ var pressure;
 var pressureTrend;
 var nwsForecastUrl;
 var nwsForecastHourlyUrl;
+var nwsTimeZone; // the location's time zone, like America/Chicago
 var nwsRelativeLocation; // nearest town to the location, {city, state}
 var hourlyForecast = []; // [{time, temperature, icon, phrase, precipitation}]
 var forecastNarrative = [];

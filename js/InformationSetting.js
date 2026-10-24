@@ -216,5 +216,8 @@ function getPageLogoFileName(subPageName){
 
     case "hourly-page":
       return "clock.svg";
+
+    case "almanac-page":
+      return "almanac.svg";
   }
 }

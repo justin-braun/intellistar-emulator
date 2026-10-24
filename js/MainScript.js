@@ -5,7 +5,8 @@ const SINGLE = [{name: "Alert", subpages: [{name: "single-alert-page", duration:
 const MULTIPLE = [{name: "Alerts", subpages: [{name: "multiple-alerts-page", duration: 7000}]},{name: "Now", subpages: [{name: "current-page", duration: 8000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
 const WEEKDAY = ["SUN",  "MON", "TUES", "WED", "THU", "FRI", "SAT"];
 
-const jingle = new Audio("assets/music/jingle.wav")
+const jingle = new Audio("assets/music/jingle.mp3")
+const MUSIC_TRACK_COUNT = 11; // assets/music/1.mp3 to 11.mp3, see assets/music/CREDITS.md
 
 const crawlSpeedCasual = 10; // A normal reading pace, in characters per second
 const crawlSpeedFast = 20; // A fast reading pace, in characters per second
@@ -66,8 +67,8 @@ function setSettingsLoading(loading){
 }
 
 function preLoadMusic(){
-  var index = Math.floor(Math.random() * 12) + 1;
-  music = new Audio("assets/music/" + index + ".wav");
+  var index = Math.floor(Math.random() * MUSIC_TRACK_COUNT) + 1;
+  music = new Audio("assets/music/" + index + ".mp3");
 }
 
 /* Set the timeline page order depending on time of day and if
@@ -112,7 +113,7 @@ function setInformation(){
 
 function checkStormMusic(){
   if(currentCondition.toLowerCase().includes("storm")){
-    music= new Audio("assets/music/storm.wav");
+    music= new Audio("assets/music/storm.mp3");
   }
 }
 

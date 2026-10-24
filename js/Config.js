@@ -4,6 +4,7 @@ window.CONFIG = {
   units: 'e', // e = English (imperial), m = Metric, h = Hybrid (UK)
   unitField: 'imperial', // This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)
   loop: false,
+  skipEnding: false, // when looping, play the pages again without the ending and greeting
   locationMode: "POSTAL",
 
   // Config Functions (index.html settings manager)
@@ -47,6 +48,7 @@ window.CONFIG = {
       if (args.crawlText !== '') CONFIG.crawl = args.crawlText
       if (args.greetingText !== '') CONFIG.greeting = args.greetingText
     }
+    CONFIG.userCrawl = CONFIG.crawl // alerts replace the crawl, see replaySequence
     
     if (args['airport-code-button']==true){
       CONFIG.locationMode="AIRPORT"
@@ -67,6 +69,8 @@ window.CONFIG = {
       localStorage.setItem('location-mode', CONFIG.locationMode)
       CONFIG.loop = getElement('loop-toggle-input').checked
       localStorage.setItem('loop', CONFIG.loop ? 'y' : 'n')
+      CONFIG.skipEnding = getElement('skip-ending-input').checked
+      localStorage.setItem('skip-ending', CONFIG.skipEnding ? 'y' : 'n')
     }
 
     zipCode = args['zip-code'] || localStorage.getItem('zip-code')
@@ -78,6 +82,7 @@ window.CONFIG = {
   },
   load: () => {
     // A link like ?zip=55401 or ?airport=MSP starts straight away, looping unless &loop=0.
+    // &ending=0 skips the ending between loops.
     // It's saved like a normal start, so the forecast keeps playing after each reload.
     let params = new URLSearchParams(location.search)
     let airport = params.has('airport')
@@ -90,6 +95,7 @@ window.CONFIG = {
       localStorage.setItem(airport ? 'airport-code' : 'zip-code', linkLocation)
       localStorage.setItem('location-mode', airport ? 'AIRPORT' : 'POSTAL')
       localStorage.setItem('loop', params.get('loop') === '0' ? 'n' : 'y')
+      localStorage.setItem('skip-ending', params.get('ending') === '0' ? 'y' : 'n')
     }
 
     let settingsPrompt = getElement('settings-prompt')
@@ -147,6 +153,13 @@ window.CONFIG = {
     zipCodeText.addEventListener('input', () => zipCodeText.value = zipCodeText.value.replace(/\D/g, ''))
     // Looping is on unless it was turned off
     getElement('loop-toggle-input').checked = localStorage.getItem('loop') !== 'n'
+    // Skipping the ending only applies when looping
+    let skipEndingInput = getElement('skip-ending-input')
+    skipEndingInput.checked = localStorage.getItem('skip-ending') === 'y'
+    CONFIG.skipEnding = skipEndingInput.checked
+    let updateSkipEnding = () => skipEndingInput.disabled = !getElement('loop-toggle-input').checked
+    updateSkipEnding()
+    getElement('loop-toggle-input').addEventListener('change', updateSkipEnding)
     if (CONFIG.loop || localStorage.getItem('loop') === 'y' || linkLocation) {
       CONFIG.loop = localStorage.getItem('loop') === 'y';
       CONFIG.started = true;

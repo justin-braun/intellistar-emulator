@@ -10,6 +10,7 @@ const MUSIC_TRACK_COUNT = 11; // assets/music/1.mp3 to 11.mp3, see assets/music/
 const MUSIC_FADE_IN = 1500;
 const MUSIC_FADE_OUT = 2000; // the end of the sequence takes about 2.6 seconds
 const MUSIC_RESUME_WITHIN = 30000; // resume the last loop's track if it was saved this recently
+const REPLAY_TIMEOUT = 30000; // when skipping the ending, reload instead if the next loop's data takes longer than this
 
 const crawlSpeedCasual = 10; // A normal reading pace, in characters per second
 const crawlSpeedFast = 20; // A fast reading pace, in characters per second
@@ -23,6 +24,10 @@ var pageOrder;
 var music;
 var musicTrack; // "1" to "11", or "storm"
 var musicStarted = false;
+var replaying = false; // fetching data to play again without the ending, see replaySequence
+var replayStarted;
+var replayWatchdog;
+var replayCrawl;
 
 window.onload = function () {
 
@@ -169,15 +174,20 @@ function revealTimeline(){
 /* Now that all the fetched information is stored in memory, display them in
 the appropriate elements */
 function setInformation(){
-  setGreetingPage();
+  if(!replaying) setGreetingPage();
   checkStormMusic();
   setAlertPage();
   setForecast();
   setOutlook();
   setHourly();
   setAlmanac();
-  createLogoElements();
   setCurrentConditions();
+  if(replaying){
+    // Give the last page time to slide out before starting again
+    setTimeout(restartSequence, Math.max(0, replayStarted + 1000 - Date.now()));
+    return;
+  }
+  createLogoElements();
   setTimelineEvents();
   hideSettings();
   setTimeout(startAnimation, 1000);
@@ -320,7 +330,7 @@ function executePage(pageIndex, subPageIndex){
   }
 
   var isLastPage = pageIndex >= pageOrder.length-1 && subPageIndex >= pageOrder[pageOrder.length-1].subpages.length-1;
-  if(isLastPage)
+  if(isLastPage && !skipEnding())
     setTimeout(hideCrawl, 2000);
 
 
@@ -354,13 +364,77 @@ function clearPage(pageIndex, subPageIndex){
     resetProgressBar();
   }
 
-  if(isLastPage){
+  if(isLastPage && !skipEnding()){
     endSequence();
   }
   else{
     currentSubPageElement.style.transitionDelay = '0s';
     currentSubPageElement.style.left = '-101%';
+    if(isLastPage) replaySequence();
   }
+}
+
+// When looping, the ending can be skipped so the pages play again straight away
+function skipEnding(){
+  return CONFIG.loop && CONFIG.skipEnding;
+}
+
+// Fetches fresh data to play the pages again, without the ending or the greeting.
+// setInformation calls restartSequence once the data is in.
+function replaySequence(){
+  replaying = true;
+  replayStarted = Date.now();
+  [radarImage, zoomedRadarImage].forEach((map) => map && clearTimeout(map.timer));
+  zoomedRadarImage = null;
+  alerts = [];
+  alertsActive = false;
+  // Alerts replace the crawl, so go back to the usual one in case they've ended
+  replayCrawl = CONFIG.crawl;
+  CONFIG.crawl = CONFIG.userCrawl;
+  // Reload like a normal loop if the data doesn't come back
+  replayWatchdog = setTimeout(reloadPage, REPLAY_TIMEOUT);
+  fetchCurrentWeather();
+}
+
+// Puts the pages and timeline back where they start, then plays them again
+function restartSequence(){
+  clearTimeout(replayWatchdog);
+  replaying = false;
+
+  var resetElements = document.querySelectorAll('.page-container, .cc-vertical-group');
+  for (var i = 0; i < resetElements.length; i++) {
+    resetElements[i].style.transition = 'none';
+    resetElements[i].style.transitionDelay = '';
+    resetElements[i].style.left = '';
+    resetElements[i].style.top = '';
+  }
+  setInitialPositionCurrentPage();
+  void getElement('content-frame').offsetWidth;
+  for (var i = 0; i < resetElements.length; i++) {
+    resetElements[i].style.transition = '';
+  }
+
+  resetProgressBar();
+  ['timeline-event-container', 'progress-stack', 'logo-stack'].forEach((id) => {
+    getElement(id).replaceChildren();
+    getElement(id).style.left = '0px';
+  });
+  currentLogo = undefined;
+  currentLogoIndex = 0;
+  createLogoElements();
+  setTimelineEvents();
+  void getElement('timeline-event-container').offsetWidth; // so the new items slide in
+  revealTimeline();
+
+  if(CONFIG.crawl != replayCrawl){
+    getElement('crawl-text').innerHTML = CONFIG.crawl;
+    getElement('crawl-text').classList.remove('animate');
+    void getElement('crawl-text').offsetWidth;
+    getElement('crawler-container').classList.toggle('shown', CONFIG.crawl.length > 0);
+    startCrawl();
+  }
+
+  schedulePages();
 }
 
 function resetProgressBar(){
@@ -370,12 +444,12 @@ function resetProgressBar(){
 }
 
 function startRadar(){
-  getElement('radar-container').appendChild(radarImage);
+  getElement('radar-container').replaceChildren(radarImage);
   radarImage.start();
 }
 
 function startZoomedRadar(){
-  getElement('zoomed-radar-container').appendChild(zoomedRadarImage);
+  getElement('zoomed-radar-container').replaceChildren(zoomedRadarImage);
   zoomedRadarImage.start();
 }
 

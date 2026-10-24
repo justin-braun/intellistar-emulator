@@ -326,7 +326,8 @@ function fetchNWSObservations(){
       pressureTrend = nwsPressureTrend(obs);
       let icon = described && nwsIcon(described.icon)
       currentIcon = icon ? icon.code : 'na'
-      setMainBackground();
+      // Keep the same photo when playing again without the ending, rather than swapping it suddenly
+      if (!replaying) setMainBackground();
       fetchAlerts();
     })
     .catch(function(err) {

@@ -164,6 +164,15 @@
   user-select: none;
 }
 
+.loop-toggle + .loop-toggle{
+  margin-top: 10px;
+}
+
+.loop-toggle:has(input:disabled){
+  opacity: 0.4;
+  cursor: default;
+}
+
 .loop-toggle input{
   position: absolute;
   opacity: 0;

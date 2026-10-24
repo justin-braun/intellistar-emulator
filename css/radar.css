@@ -43,6 +43,80 @@
   visibility: hidden;
 }
 
+.radar-boundaries path{
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.radar-boundaries .radar-county{
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1px;
+}
+
+.radar-boundaries .radar-state{
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2px;
+}
+
+/* City names, placed by drawPlaceLabels */
+.radar-place{
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 2px;
+  white-space: nowrap;
+  font-family: 'Retrocast Sans', sans-serif;
+  font-weight: 300;
+  font-size: 20px;
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9), 1px 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.radar-place-major{
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.radar-place-left{
+  flex-direction: row-reverse;
+  padding-left: 0;
+  padding-right: 2px;
+}
+
+/* The dot sits at the top or bottom of the label instead of the middle */
+.radar-place-below{
+  align-items: flex-start;
+}
+
+.radar-place-above{
+  align-items: flex-end;
+}
+
+.radar-place-below .radar-place-dot{
+  margin-top: 2px;
+}
+
+.radar-place-above .radar-place-dot{
+  margin-bottom: 2px;
+}
+
+.radar-place-dot{
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+}
+
+.radar-place-home .radar-place-dot{
+  width: 10px;
+  height: 10px;
+  background-color: #ffd166;
+}
+
 .radar-alerts path{
   stroke-width: 2px;
   stroke-opacity: 0.9;

@@ -7,7 +7,7 @@ A retro local forecast for any US ZIP code. Retrocast plays a minute-long foreca
 ## Features
 - **Live current conditions** from the nearest National Weather Service station
 - **Forecast and 7 day outlook** from the NWS, with [Open-Meteo](https://open-meteo.com) filling in days past the NWS forecast range
-- **2 hour animated radar** with active watches, warnings and advisories drawn on the map in the official NWS hazard colors
+- **2 hour animated radar** with county lines, city names and active watches, warnings and advisories drawn on the map in the official NWS hazard colors
 - **Severe weather alerts** shown at the start of the loop, with a zoomed radar for the location
 - **Backgrounds that match the forecast**: a photo of the location, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky)
 - **Looping** for kiosks and spare screens, with fresh data every cycle
@@ -62,7 +62,8 @@ Click **Show advanced options** on the start screen to change the crawl text tha
 Retrocast uses free services that don't need a key:
 - Weather, forecasts, alerts and zone shapes: [National Weather Service API](https://www.weather.gov/documentation/services-web-api)
 - Radar: [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu) NEXRAD mosaic
-- Map imagery, borders and places: [Esri](https://www.esri.com)
+- Map imagery: [Esri](https://www.esri.com)
+- County and state lines and city names: [US Census Bureau TIGERweb](https://tigerweb.geo.census.gov)
 - Extended outlook: [Open-Meteo](https://open-meteo.com)
 - ZIP code lookup: [Zippopotam.us](https://zippopotam.us)
 - Background photos: [Wikimedia Commons](https://commons.wikimedia.org) and [Wikipedia](https://www.wikipedia.org), credited on screen

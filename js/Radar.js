@@ -1,7 +1,7 @@
 // Radar map built from map tiles so it can be styled to match the rest of the emulator.
-// Satellite imagery (Esri) with borders and places on top, NEXRAD radar mosaic frames
-// from the Iowa Environmental Mesonet animated over the last 2 hours, and active NWS
-// watches, warnings and advisories. None of these need a key.
+// Satellite imagery (Esri), NEXRAD radar mosaic frames from the Iowa Environmental Mesonet
+// animated over the last 2 hours, county and state lines and city names from the US Census
+// Bureau, and active NWS watches, warnings and advisories. None of these need a key.
 
 const RADAR_WIDTH = 1235;
 const RADAR_HEIGHT = 525;
@@ -41,6 +41,11 @@ function fetchRadarImages(){
       fetchAlertShapes(radarBounds(RADAR_ZOOM)).then(function(shapes) {
         [radarImage, zoomedRadarImage].forEach((map) => map && drawAlerts(map, shapes));
       });
+      // The zoomed map is inside the regular map, so one request covers both.
+      // Simplify the outlines to about a pixel at the zoomed map's scale.
+      fetchMapFeatures(radarBounds(RADAR_ZOOM), 360 / (256 * Math.pow(2, ZOOMED_RADAR_ZOOM))).then(function(features) {
+        [radarImage, zoomedRadarImage].forEach((map) => map && drawMapFeatures(map, features));
+      });
       scheduleTimeline();
     });
 }
@@ -75,12 +80,14 @@ function buildRadarMap(zoom, times){
   map.className = 'radar-map';
 
   let [left, top] = radarOrigin(zoom);
+  map.zoom = zoom;
   map.project = function(lon, lat) {
     let [x, y] = worldPixel(lon, lat, zoom);
     return [x - left, y - top];
   };
 
-  let tileLayer = function(className, url) {
+  // Adds a layer of map tiles, on top unless another layer to go below is given
+  let tileLayer = function(className, url, below) {
     let layer = document.createElement('div');
     layer.className = 'radar-layer ' + className;
     for (let tx = Math.floor(left / 256); tx <= Math.floor((left + RADAR_WIDTH - 1) / 256); tx++) {
@@ -95,6 +102,14 @@ function buildRadarMap(zoom, times){
         layer.appendChild(tile);
       }
     }
+    map.insertBefore(layer, below || null);
+    return layer;
+  };
+  let svgLayer = function(className) {
+    let layer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    layer.setAttribute('class', 'radar-layer ' + className);
+    layer.setAttribute('width', RADAR_WIDTH);
+    layer.setAttribute('height', RADAR_HEIGHT);
     map.appendChild(layer);
     return layer;
   };
@@ -102,14 +117,18 @@ function buildRadarMap(zoom, times){
   tileLayer('radar-imagery', IMAGERY_TILES);
   let frames = times.map((time) => tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time))));
 
-  // Filled in by drawAlerts. Above the radar but below the place names.
-  map.alertLayer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  map.alertLayer.setAttribute('class', 'radar-layer radar-alerts');
-  map.alertLayer.setAttribute('width', RADAR_WIDTH);
-  map.alertLayer.setAttribute('height', RADAR_HEIGHT);
-  map.appendChild(map.alertLayer);
-
-  tileLayer('radar-places', PLACES_TILES);
+  // Filled in by drawMapFeatures and drawAlerts: county and state lines, then alerts,
+  // then city names on top
+  map.boundaryLayer = svgLayer('radar-boundaries');
+  map.alertLayer = svgLayer('radar-alerts');
+  map.placeLayer = document.createElement('div');
+  map.placeLayer.className = 'radar-layer radar-places';
+  map.appendChild(map.placeLayer);
+  // Esri's borders and places, used if the Census data can't be loaded
+  map.addFallbackPlaces = function() {
+    tileLayer('radar-places', PLACES_TILES, map.placeLayer);
+    map.attribution.innerHTML = 'Radar: Iowa Environmental Mesonet &middot; Imagery, borders and places: Esri';
+  };
 
   map.alertLegend = document.createElement('div');
   map.alertLegend.className = 'radar-legend regular-text';
@@ -122,8 +141,9 @@ function buildRadarMap(zoom, times){
 
   let attribution = document.createElement('div');
   attribution.className = 'radar-attribution';
-  attribution.innerHTML = 'Radar: Iowa Environmental Mesonet &middot; Imagery: Esri';
+  attribution.innerHTML = 'Radar: Iowa Environmental Mesonet &middot; Imagery: Esri &middot; Boundaries and places: US Census Bureau';
   map.appendChild(attribution);
+  map.attribution = attribution;
 
   let showFrame = function(index) {
     frames.forEach((frame, i) => frame.style.visibility = i == index ? 'visible' : 'hidden');
@@ -283,18 +303,27 @@ function fetchAlertShapes(bounds){
     });
 }
 
+// The polygons of a GeoJSON geometry, each a list of rings of [lon, lat]
+function geometryPolygons(geometry){
+  if (!geometry) return [];
+  if (geometry.type == 'Polygon') return [geometry.coordinates];
+  if (geometry.type == 'MultiPolygon') return geometry.coordinates;
+  if (geometry.type == 'GeometryCollection') return geometry.geometries.flatMap(geometryPolygons);
+  return [];
+}
+
+// SVG path data for the outlines of GeoJSON geometries on the map
+function geometryPath(map, geometries){
+  return geometries.flatMap(geometryPolygons).flat().map((ring) =>
+    'M' + ring.map(([lon, lat]) => map.project(lon, lat).map((v) => v.toFixed(1)).join(',')).join('L') + 'Z').join('');
+}
+
 function drawAlerts(map, shapes){
-  let polygons = function(geometry) {
-    if (geometry.type == 'Polygon') return [geometry.coordinates];
-    if (geometry.type == 'MultiPolygon') return geometry.coordinates;
-    if (geometry.type == 'GeometryCollection') return geometry.geometries.flatMap(polygons);
-    return [];
-  };
   let shown = [];
   shapes.forEach(function(shape) {
     let d = '';
     let visible = false;
-    polygons(shape.geometry).forEach((polygon) => polygon.forEach(function(ring) {
+    geometryPolygons(shape.geometry).forEach((polygon) => polygon.forEach(function(ring) {
       let points = ring.map(([lon, lat]) => map.project(lon, lat));
       // Shown in the legend if its bounding box overlaps the map
       let xs = points.map((p) => p[0]), ys = points.map((p) => p[1]);
@@ -326,4 +355,159 @@ function drawAlerts(map, shapes){
     map.alertLegend.appendChild(item);
   });
   map.alertLegend.style.display = shown.length ? '' : 'none';
+
+  // Where the legend sits, so city labels stay out from under it. The map isn't on the
+  // page yet, so measure the text instead of the element.
+  map.legendBox = null;
+  if (shown.length) {
+    let context = document.createElement('canvas').getContext('2d');
+    context.font = "200 22px 'Retrocast Sans'";
+    let items = shown.slice(0, ALERT_MAX_LEGEND);
+    let width = Math.max(...items.map((s) => context.measureText(s.event).width)) + 64; // swatch and padding
+    let height = items.length * 30 + 12;
+    map.legendBox = {x: 15, y: RADAR_HEIGHT - 22 - height, width, height};
+    removeLabelsUnderLegend(map);
+  }
+}
+
+function boxesOverlap(a, b){
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+}
+
+// For labels placed before the alerts arrived. The forecast location's label is kept.
+function removeLabelsUnderLegend(map){
+  if (!map.legendBox) return;
+  [...map.placeLayer.children].forEach((label) => !label.isHome && boxesOverlap(label.box, map.legendBox) && label.remove());
+}
+
+// County and state lines and city names from the US Census Bureau's TIGERweb service
+// (public domain). Cities are labeled by 2020 population, biggest first, skipping any
+// that would overlap a label already placed.
+
+const TIGERWEB = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb';
+const MAP_FEATURES_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
+const PLACE_MIN_POPULATION = 1000;
+const PLACE_MAJOR_POPULATION = 100000;
+const PLACE_MAX_LABELS = {8: 28, 9: 36};
+const PLACE_MAJOR_FONT = "600 24px 'Retrocast Sans'";
+const PLACE_MINOR_FONT = "300 20px 'Retrocast Sans'";
+
+// Resolves to {counties, states, places}, or null if the Census data can't be loaded
+function fetchMapFeatures(bounds, tolerance){
+  let envelope = bounds.map((v) => v.toFixed(2)).join(',');
+  // Only the latest location is kept, since the outlines are fairly large
+  try {
+    let cached = JSON.parse(localStorage.getItem('map-features'));
+    if (cached && cached.envelope == envelope && Date.now() - cached.time < MAP_FEATURES_CACHE_MS) return Promise.resolve(cached.features);
+  } catch (err) {}
+  let query = (layer, params) => fetch(`${TIGERWEB}/${layer}/query?` + new URLSearchParams(Object.assign({
+      geometry: envelope, geometryType: 'esriGeometryEnvelope', inSR: 4326, spatialRel: 'esriSpatialRelIntersects', outSR: 4326, f: 'geojson',
+    }, params)))
+    .then(function(response) {
+      if (response.status !== 200) throw new Error(`TIGERweb request error ${response.status}`);
+      return response.json();
+    })
+    .then(function(data) {
+      if (data.error) throw new Error(`TIGERweb error ${data.error.message}`);
+      return data.features;
+    });
+  let outlines = {where: '1=1', outFields: 'GEOID', returnGeometry: true, maxAllowableOffset: tolerance, geometryPrecision: 3};
+  return Promise.all([
+    query('State_County/MapServer/55', outlines), // Census 2020 counties
+    query('State_County/MapServer/54', outlines), // Census 2020 states
+    query('Places_CouSub_ConCity_SubMCD/MapServer/25', { // Census 2020 incorporated places
+      where: `POP100 >= ${PLACE_MIN_POPULATION}`, outFields: 'BASENAME,POP100,INTPTLAT,INTPTLON',
+      returnGeometry: false, orderByFields: 'POP100 DESC', resultRecordCount: 400,
+    }),
+  ])
+    .then(function([counties, states, places]) {
+      let features = {
+        counties: counties.map((f) => f.geometry),
+        states: states.map((f) => f.geometry),
+        places: places.map((f) => ({name: f.properties.BASENAME, population: f.properties.POP100, lon: Number(f.properties.INTPTLON), lat: Number(f.properties.INTPTLAT)})),
+      };
+      try {
+        localStorage.setItem('map-features', JSON.stringify({envelope, time: Date.now(), features}));
+      } catch (err) {}
+      return features;
+    })
+    .catch(function(err) {
+      console.warn("Census map data error, using Esri borders and places instead", err);
+      return null;
+    });
+}
+
+function drawMapFeatures(map, features){
+  if (!features) {
+    map.addFallbackPlaces();
+    return;
+  }
+  [['radar-county', features.counties], ['radar-state', features.states]].forEach(function([className, geometries]) {
+    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class', className);
+    path.setAttribute('d', geometryPath(map, geometries));
+    map.boundaryLayer.appendChild(path);
+  });
+  // The fonts must be loaded to measure the labels
+  Promise.all([document.fonts.load(PLACE_MAJOR_FONT), document.fonts.load(PLACE_MINOR_FONT)])
+    .then(() => drawPlaceLabels(map, features.places));
+}
+
+function drawPlaceLabels(map, places){
+  let context = document.createElement('canvas').getContext('2d');
+  // Keep clear of the frame time in the top right corner and the credits in the bottom right
+  let taken = [{x: RADAR_WIDTH - 250, y: 0, width: 250, height: 80}, {x: RADAR_WIDTH - 500, y: RADAR_HEIGHT - 24, width: 500, height: 24}];
+  if (map.legendBox) taken.push(map.legendBox);
+  // A place's own reserved dot doesn't count as an overlap for its label
+  let overlaps = (a, place) => taken.some((b) => b.owner !== place && boxesOverlap(a, b));
+  // Label big cities first, then the town nearest the forecast location, then the rest by
+  // population. The forecast location is always labeled, even if it has to overlap.
+  let distance = (p) => Math.hypot(p.lon - longitude, p.lat - latitude);
+  let home = places.reduce((nearest, p) => (!nearest || distance(p) < distance(nearest)) ? p : nearest, null);
+  if (home && distance(home) > 0.15) home = null;
+  let others = places.filter((p) => p !== home);
+  let majors = others.filter((p) => p.population >= PLACE_MAJOR_POPULATION);
+  let ordered = [...majors, ...(home ? [home] : []), ...others.filter((p) => p.population < PLACE_MAJOR_POPULATION)];
+  // Keep other labels off the dots of big cities and the forecast location, so two cities
+  // close together (like Minneapolis and St. Paul) can both be labeled
+  [...majors, ...(home ? [home] : [])].forEach(function(place) {
+    let [x, y] = map.project(place.lon, place.lat);
+    taken.push({x: x - 6, y: y - 6, width: 12, height: 12, owner: place});
+  });
+  let count = 0;
+  for (let place of ordered) {
+    if (count >= (PLACE_MAX_LABELS[map.zoom] || 30) && place !== home) continue;
+    let [x, y] = map.project(place.lon, place.lat);
+    let major = place === home || place.population >= PLACE_MAJOR_POPULATION;
+    context.font = major ? PLACE_MAJOR_FONT : PLACE_MINOR_FONT;
+    let height = major ? 28 : 24;
+    let width = Math.ceil(context.measureText(place.name).width) + 18; // dot and gap
+    // Try the label to the right of the dot, then to the left, then hanging below or sitting
+    // above the dot so neighboring cities can both be labeled
+    let right = x - 6, left = x - width + 6;
+    let box = [
+      {x: right, y: y - height / 2}, {x: left, y: y - height / 2, left: true},
+      {x: right, y: y - 6, below: true}, {x: right, y: y - height + 6, above: true},
+      {x: left, y: y - 6, left: true, below: true}, {x: left, y: y - height + 6, left: true, above: true},
+    ].map((b) => Object.assign(b, {width, height}))
+      .find((b) => b.x >= 4 && b.y >= 4 && b.x + b.width <= RADAR_WIDTH - 4 && b.y + b.height <= RADAR_HEIGHT - 4 && !overlaps({x: b.x - 4, y: b.y - 2, width: b.width + 8, height: b.height + 4}, place));
+    if (!box && place === home) box = {x: right, y: y - height / 2, width, height};
+    if (!box) continue;
+    taken.push(box);
+    count++;
+    let label = document.createElement('div');
+    label.className = 'radar-place' + (major ? ' radar-place-major' : '') + (place === home ? ' radar-place-home' : '') +
+      (box.left ? ' radar-place-left' : '') + (box.below ? ' radar-place-below' : '') + (box.above ? ' radar-place-above' : '');
+    label.box = box;
+    label.isHome = place === home;
+    label.style.left = box.x + 'px';
+    label.style.top = box.y + 'px';
+    label.style.width = box.width + 'px';
+    label.style.height = box.height + 'px';
+    let dot = document.createElement('span');
+    dot.className = 'radar-place-dot';
+    label.appendChild(dot);
+    label.appendChild(document.createTextNode(place.name));
+    map.placeLayer.appendChild(label);
+  }
 }

@@ -7,9 +7,9 @@ const RADAR_WIDTH = 1235;
 const RADAR_HEIGHT = 525;
 const RADAR_ZOOM = 8;
 const ZOOMED_RADAR_ZOOM = 9;
-const RADAR_FRAME_COUNT = 13; // 2 hours of frames
-const RADAR_FRAME_MINUTES = 10;
-const RADAR_FRAME_DURATION = 400;
+const RADAR_FRAME_COUNT = 25; // 2 hours of frames
+const RADAR_FRAME_MINUTES = 5; // how often the mosaic is updated
+const RADAR_FRAME_DURATION = 200; // each frame fades into the next over this time
 const RADAR_LAST_FRAME_DURATION = 1600;
 
 const IMAGERY_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -90,6 +90,7 @@ function buildRadarMap(zoom, times){
   let tileLayer = function(className, url, below) {
     let layer = document.createElement('div');
     layer.className = 'radar-layer ' + className;
+    layer.loading = 0;
     for (let tx = Math.floor(left / 256); tx <= Math.floor((left + RADAR_WIDTH - 1) / 256); tx++) {
       for (let ty = Math.floor(top / 256); ty <= Math.floor((top + RADAR_HEIGHT - 1) / 256); ty++) {
         let tile = new Image();
@@ -97,7 +98,9 @@ function buildRadarMap(zoom, times){
         tile.style.left = (tx * 256 - left) + 'px';
         tile.style.top = (ty * 256 - top) + 'px';
         // Hide tiles that fail to load instead of showing a broken image
-        tile.onerror = () => tile.style.visibility = 'hidden';
+        layer.loading++;
+        tile.onload = () => layer.loading--;
+        tile.onerror = () => { layer.loading--; tile.style.visibility = 'hidden'; };
         tile.src = url.replace('{z}', zoom).replace('{x}', tx).replace('{y}', ty);
         layer.appendChild(tile);
       }
@@ -115,7 +118,12 @@ function buildRadarMap(zoom, times){
   };
 
   tileLayer('radar-imagery', IMAGERY_TILES);
-  let frames = times.map((time) => tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time))));
+  // The frames are kept in their own layer so the newest can be put on top while it fades in
+  let frameLayer = document.createElement('div');
+  frameLayer.className = 'radar-layer radar-frames';
+  map.appendChild(frameLayer);
+  let frames = times.map((time) => frameLayer.appendChild(tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time)))));
+  let topFrame = 0;
 
   // Filled in by drawMapFeatures and drawAlerts: county and state lines, then alerts,
   // then city names on top
@@ -145,8 +153,23 @@ function buildRadarMap(zoom, times){
   map.appendChild(attribution);
   map.attribution = attribution;
 
+  // Fades the frame in on top, then fades out the one below once it's mostly covered, so
+  // storms glide between frames instead of jumping. Hidden frames aren't drawn at all.
   let showFrame = function(index) {
-    frames.forEach((frame, i) => frame.style.visibility = i == index ? 'visible' : 'hidden');
+    frames.forEach((frame, i) => {
+      if (i == index) {
+        frame.style.zIndex = ++topFrame;
+        frame.style.transition = `opacity ${RADAR_FRAME_DURATION}ms`;
+        frame.style.visibility = 'visible';
+        frame.style.opacity = 1;
+      }
+      else if (frame.style.visibility == 'visible') {
+        let delay = RADAR_FRAME_DURATION / 2;
+        frame.style.transition = `opacity ${RADAR_FRAME_DURATION}ms ${delay}ms, visibility 0s ${delay + RADAR_FRAME_DURATION}ms`;
+        frame.style.visibility = 'hidden';
+        frame.style.opacity = 0;
+      }
+    });
     timeLabel.innerHTML = formatRadarTime(times[index]);
   };
 
@@ -158,7 +181,8 @@ function buildRadarMap(zoom, times){
     }
     let index = 0;
     let next = function() {
-      showFrame(index);
+      // Skip frames that are still loading rather than showing them half drawn
+      if (frames[index].loading == 0) showFrame(index);
       let last = index == frames.length - 1;
       index = last ? 0 : index + 1;
       map.timer = setTimeout(next, last ? RADAR_LAST_FRAME_DURATION : RADAR_FRAME_DURATION);

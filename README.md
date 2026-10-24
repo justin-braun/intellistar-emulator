@@ -56,6 +56,9 @@ To mute or unmute the music, click the speaker button in the top right corner or
 ## Customizing
 Click **Show advanced options** on the start screen to change the crawl text that scrolls along the bottom and the greeting shown at the start.
 
+## Roadmap
+Planned features and ideas are tracked as [GitHub issues](https://github.com/justin-braun/retrocast/issues), labeled by area (forecast, radar, kiosk, sound, look and feel, maintenance) and effort. Suggestions are welcome there too.
+
 ## Screenshots
 ![Start screen](screenshots/startup.jpg)
 

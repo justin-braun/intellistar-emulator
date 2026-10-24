@@ -34,8 +34,9 @@ body{
   top: 815px;
   left: 150px;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+  /* Slightly darker instead of a backdrop blur. The blur had to be redrawn whenever the
+     radar or pages moved behind it, which dropped frames and made the crawl stutter. */
+  background-color: rgba(0, 0, 0, 0.6);
   transition: top 300ms, height 300ms;
   transition-timing-function: linear;
 }

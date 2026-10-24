@@ -416,12 +416,17 @@
         <input type="text" id="airport-code-text" class="settings-field location-field airport-field" placeholder="e.g. MSP or KMSP"
           maxlength="4" autocapitalize="characters" spellcheck="false" aria-label="Airport code"/>
       </div>
+      <label class="loop-toggle">
+        <input type="checkbox" id="loop-toggle-input"/>
+        <span class="loop-switch" aria-hidden="true"></span>
+        Loop continuously
+      </label>
       <div id="settings-error" role="alert"></div>
 
       <!-- Start button and advanced options toggle are added by CONFIG.load -->
       <div id="advanced-settings-options" class="hidden"></div>
 
-      <p class="settings-footer">Click the Retrocast logo during playback to toggle looping.</p>
+      <p class="settings-footer">To stop looping, press Esc or click the Retrocast logo during playback.</p>
     </div>
   </div>
 

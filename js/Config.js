@@ -46,7 +46,6 @@ window.CONFIG = {
     } else {
       if (args.crawlText !== '') CONFIG.crawl = args.crawlText
       if (args.greetingText !== '') CONFIG.greeting = args.greetingText
-      if (args.loop === 'y') CONFIG.loop = true
     }
     
     if (args['airport-code-button']==true){
@@ -66,6 +65,8 @@ window.CONFIG = {
     }
     if (!currentLoop) {
       localStorage.setItem('location-mode', CONFIG.locationMode)
+      CONFIG.loop = getElement('loop-toggle-input').checked
+      localStorage.setItem('loop', CONFIG.loop ? 'y' : 'n')
     }
 
     zipCode = args['zip-code'] || localStorage.getItem('zip-code')
@@ -76,6 +77,21 @@ window.CONFIG = {
     fetchCurrentWeather();
   },
   load: () => {
+    // A link like ?zip=55401 or ?airport=MSP starts straight away, looping unless &loop=0.
+    // It's saved like a normal start, so the forecast keeps playing after each reload.
+    let params = new URLSearchParams(location.search)
+    let airport = params.has('airport')
+    let linkLocation = airport ? params.get('airport') : params.get('zip')
+    if (linkLocation && !(airport ? /^[A-Za-z0-9]{3,4}$/ : /^\d{5}$/).test(linkLocation)) {
+      console.warn(`Ignoring invalid ${airport ? 'airport' : 'zip'} in the link: ${linkLocation}`)
+      linkLocation = null
+    }
+    if (linkLocation) {
+      localStorage.setItem(airport ? 'airport-code' : 'zip-code', linkLocation)
+      localStorage.setItem('location-mode', airport ? 'AIRPORT' : 'POSTAL')
+      localStorage.setItem('loop', params.get('loop') === '0' ? 'n' : 'y')
+    }
+
     let settingsPrompt = getElement('settings-prompt')
     let advancedSettingsOptions = getElement('advanced-settings-options')
 
@@ -129,8 +145,11 @@ window.CONFIG = {
       if (e.key === 'Enter' && !btn.disabled) CONFIG.submit()
     }))
     zipCodeText.addEventListener('input', () => zipCodeText.value = zipCodeText.value.replace(/\D/g, ''))
-    if (CONFIG.loop || localStorage.getItem('loop') === 'y') {
-      CONFIG.loop = true;
+    // Looping is on unless it was turned off
+    getElement('loop-toggle-input').checked = localStorage.getItem('loop') !== 'n'
+    if (CONFIG.loop || localStorage.getItem('loop') === 'y' || linkLocation) {
+      CONFIG.loop = localStorage.getItem('loop') === 'y';
+      CONFIG.started = true;
       hideSettings();
       CONFIG.submit()
     }

@@ -37,7 +37,14 @@ This uses the published image, `ghcr.io/justin-braun/retrocast`, and restarts it
 To build the image yourself instead: `docker build -t retrocast .` then `docker run -p 8080:80 retrocast`.
 
 ## Looping
-To turn looping on or off, click the Retrocast logo in the top left corner while the forecast is playing. When looping, the page reloads at the end of each forecast and fetches new data, about once a minute.
+Retrocast loops by default, which suits kiosks and spare screens. Each time the forecast ends, the page reloads and fetches new data, about once a minute. To play the forecast just once, turn off **Loop continuously** on the start screen.
+
+To stop looping during playback, press Esc or click the Retrocast logo in the top left corner. The start screen comes back when the current forecast ends. Clicking the logo again turns looping back on.
+
+To start without typing, for example on a kiosk, open Retrocast with the location in the link:
+- `http://localhost:8080/?zip=55401` for a ZIP code
+- `http://localhost:8080/?airport=MSP` for an airport
+- Add `&loop=0` to play once instead of looping, like `?zip=55401&loop=0`
 
 If the music doesn't play when looping, the browser is blocking autoplay. In Chrome you can allow it at `chrome://flags#autoplay-policy` by choosing `No user gesture is required`.
 

@@ -30,7 +30,11 @@ window.onload = function () {
   preLoadMusic();
   resizeWindow();
   setClockTime();
-  if (!CONFIG.loop) {
+  // Esc stops looping during playback, for screens without a mouse
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && CONFIG.loop && !settingsVisible()) logoClick();
+  });
+  if (!CONFIG.started) {
     getElement("settings-container").style.display = 'block';
     (getElement('airport-code-button').checked ? getElement('airport-code-text') : getElement('zip-code-text')).focus();
   }
@@ -380,7 +384,12 @@ function clearEnd(){
 }
 
 function reloadPage(){
-  location.reload()
+  // Drop a ?zip= start link when not looping, so the start screen shows instead of playing again
+  if (!CONFIG.loop && location.search) {
+    location.href = location.pathname;
+  } else {
+    location.reload()
+  }
 }
 
 function loadInfoBar(){
@@ -568,8 +577,7 @@ function calculateCrawlSpeed() {
 }
 
 function showLoopMessage(){
-  var loopStatus = ((CONFIG.loop) ? 'enabled' : 'disabled');
-  alert("Looping " + loopStatus + ", click the logo to toggle");
+  alert(CONFIG.loop ? "Looping on" : "Looping off, the start screen will show after this forecast");
 }
 
 function hideAlertMessage(){

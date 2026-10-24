@@ -118,11 +118,12 @@ function buildRadarMap(zoom, times){
   };
 
   tileLayer('radar-imagery', IMAGERY_TILES);
-  // The frames are kept in their own layer so the newest can be put on top while it fades in
+  // The frames are kept in their own layer so the newest can be put on top while it fades in.
+  // They're requested newest first, so on a slow connection the latest radar is ready soonest.
   let frameLayer = document.createElement('div');
   frameLayer.className = 'radar-layer radar-frames';
   map.appendChild(frameLayer);
-  let frames = times.map((time) => frameLayer.appendChild(tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time)))));
+  let frames = times.slice().reverse().map((time) => frameLayer.appendChild(tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time))))).reverse();
   let topFrame = 0;
 
   // Filled in by drawMapFeatures and drawAlerts: county and state lines, then alerts,
@@ -179,6 +180,8 @@ function buildRadarMap(zoom, times){
       timeLabel.style.display = 'none';
       return;
     }
+    // If no frame has finished loading, show the latest as it loads instead of a blank map
+    if (frames.every((frame) => frame.loading > 0)) showFrame(frames.length - 1);
     let index = 0;
     let next = function() {
       // Skip frames that are still loading rather than showing them half drawn

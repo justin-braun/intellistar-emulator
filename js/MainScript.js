@@ -215,9 +215,21 @@ function startMusic(){
   fadeMusic(1, MUSIC_FADE_IN);
 }
 
-// Browsers block audio that starts without a click, such as after a looping reload
+// Browsers block audio that starts without a click, such as after a looping reload or a
+// start link, so try again on the first click or key press
 function playAudio(audio){
-  audio.play().catch((err) => console.warn("Audio didn't start, click the mute button to start the music", err));
+  audio.play().catch((err) => {
+    console.warn("Audio didn't start, it will start on the next click or key press", err);
+    let retry = (e) => {
+      // The mute button starts or mutes the music itself
+      if (e.target.closest && e.target.closest('#mute-button')) return;
+      document.removeEventListener('pointerdown', retry);
+      document.removeEventListener('keydown', retry);
+      if (audio == music && audio.paused && !isMuted()) audio.play().catch(() => {});
+    };
+    document.addEventListener('pointerdown', retry);
+    document.addEventListener('keydown', retry);
+  });
 }
 
 function isMuted(){

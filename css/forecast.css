@@ -67,6 +67,8 @@
   font-size: 52px;
 }
 
+/* Kept to one line so it doesn't push the precipitation text out of the column */
 .tomorrow-night-text{
-  font-size: 48px;
+  font-size: 42px;
+  white-space: nowrap;
 }

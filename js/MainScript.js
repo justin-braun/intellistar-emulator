@@ -448,9 +448,19 @@ function clearInfoBar(){
 
 // Animates everything out (not including main background)
 function clearElements(){
-  getElement("outlook-titlebar").classList.add('hidden');
-  getElement("forecast-left-container").classList.add('hidden');
-  getElement("forecast-right-container").classList.add('hidden');
+  var lastPage = pageOrder[pageOrder.length-1];
+  var lastSubPageName = lastPage.subpages[lastPage.subpages.length-1].name;
+  if(lastSubPageName == "7day-page"){
+    // The 7 day page splits apart instead of sliding out
+    getElement("outlook-titlebar").classList.add('hidden');
+    getElement("forecast-left-container").classList.add('hidden');
+    getElement("forecast-right-container").classList.add('hidden');
+  }
+  else{
+    var lastSubPageElement = getElement(lastSubPageName);
+    lastSubPageElement.style.transitionDelay = '0s';
+    lastSubPageElement.style.left = '-101%';
+  }
   getElement("content-container").classList.add("expand");
   getElement("timeline-container").style.visibility = "hidden";
   showEnding();

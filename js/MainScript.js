@@ -11,6 +11,7 @@ const MUSIC_FADE_IN = 1500;
 const MUSIC_FADE_OUT = 2000; // the end of the sequence takes about 2.6 seconds
 const MUSIC_RESUME_WITHIN = 30000; // resume the last loop's track if it was saved this recently
 const REPLAY_TIMEOUT = 30000; // when skipping the ending, reload instead if the next loop's data takes longer than this
+const REPLAY_RELOAD_AFTER = 30 * 60 * 1000; // when skipping the ending, still reload this often to clear anything stuck
 
 const crawlSpeedCasual = 10; // A normal reading pace, in characters per second
 const crawlSpeedFast = 20; // A fast reading pace, in characters per second
@@ -382,7 +383,11 @@ function clearPage(pageIndex, subPageIndex){
   else{
     currentSubPageElement.style.transitionDelay = '0s';
     currentSubPageElement.style.left = '-101%';
-    if(isLastPage) replaySequence();
+    if(isLastPage){
+      // Reload now and then, which also picks a new background photo, once the last page has slid out
+      if(performance.now() > REPLAY_RELOAD_AFTER) setTimeout(reloadPage, 700);
+      else replaySequence();
+    }
   }
 }
 

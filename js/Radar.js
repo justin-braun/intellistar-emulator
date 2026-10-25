@@ -11,6 +11,7 @@ const RADAR_FRAME_COUNT = 25; // 2 hours of frames
 const RADAR_FRAME_MINUTES = 5; // how often the mosaic is updated
 const RADAR_FRAME_DURATION = 200; // each frame fades into the next over this time
 const RADAR_LAST_FRAME_DURATION = 1600;
+const RADAR_LOAD_TIMEOUT = 10000; // a tile or the latest time that takes longer than this counts as failed
 
 const IMAGERY_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const PLACES_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
@@ -18,7 +19,8 @@ const RADAR_TILES = 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge
 const RADAR_LATEST = 'https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_0.json';
 
 function fetchRadarImages(){
-  fetch(RADAR_LATEST)
+  // Always check with the server, so a cached copy can't hold the radar at an old time
+  fetch(RADAR_LATEST, {cache: 'no-cache', signal: AbortSignal.timeout(RADAR_LOAD_TIMEOUT)})
     .then((response) => response.json())
     .then((data) => new Date(data.meta.valid))
     .catch(function(err) {
@@ -97,10 +99,14 @@ function buildRadarMap(zoom, times){
         tile.className = 'radar-tile';
         tile.style.left = (tx * 256 - left) + 'px';
         tile.style.top = (ty * 256 - top) + 'px';
-        // Hide tiles that fail to load instead of showing a broken image
+        // Hide tiles that fail to load instead of showing a broken image. A tile that hangs
+        // counts as done after a while, so it can't keep its frame out of the loop.
         layer.loading++;
-        tile.onload = () => layer.loading--;
-        tile.onerror = () => { layer.loading--; tile.style.visibility = 'hidden'; };
+        let done = false;
+        let finish = () => { if (!done) { done = true; layer.loading--; } };
+        tile.onload = finish;
+        tile.onerror = () => { finish(); tile.style.visibility = 'hidden'; };
+        setTimeout(finish, RADAR_LOAD_TIMEOUT);
         tile.src = url.replace('{z}', zoom).replace('{x}', tx).replace('{y}', ty);
         layer.appendChild(tile);
       }

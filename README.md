@@ -41,7 +41,7 @@ To build the image yourself instead: `docker build -t retrocast .` then `docker 
 ## Looping
 Retrocast loops by default, which suits kiosks and spare screens. Each time the forecast ends, the page reloads and fetches new data, about once a minute. To play the forecast just once, turn off **Loop continuously** on the start screen.
 
-To leave out the "Thanks for watching" ending, turn on **Skip the ending between loops**. The pages then play again straight away, without the ending or the greeting, still with fresh data each time. The background photo stays the same until the page is reloaded.
+To leave out the "Thanks for watching" ending, turn on **Skip the ending between loops**. The pages then play again straight away, without the ending or the greeting, still with fresh data each time. To clear anything that gets stuck, the page still reloads fully about every 30 minutes, with the greeting and a new background photo.
 
 To stop looping during playback, press Esc or click the Retrocast logo in the top left corner. The start screen comes back when the current forecast ends. Clicking the logo again turns looping back on.
 

@@ -1,6 +1,6 @@
 // Preset timeline sequences
-const MORNING = [{name: "Now", subpages: [{name: "current-page", duration: 9000}, {name: "radar-page", duration: 8000}, {name: "hourly-page", duration: 9000}]},{name: "Today", subpages: [{name: "today-page", duration: 10000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "7day-page", duration: 13000}, {name: "almanac-page", duration: 12000}]},]
-const NIGHT = [{name: "Now", subpages: [{name: "current-page", duration: 9000}, {name: "radar-page", duration: 8000}, {name: "hourly-page", duration: 9000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "tomorrow-night-page", duration: 10000}, {name: "7day-page", duration: 13000}, {name: "almanac-page", duration: 12000}]},]
+const MORNING = [{name: "Now", subpages: [{name: "current-page", duration: 9000}, {name: "radar-page", duration: 8000}, {name: "satellite-page", duration: 8000}, {name: "temperature-map-page", duration: 8000}, {name: "hourly-page", duration: 9000}]},{name: "Today", subpages: [{name: "today-page", duration: 10000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "7day-page", duration: 13000}, {name: "almanac-page", duration: 12000}]},]
+const NIGHT = [{name: "Now", subpages: [{name: "current-page", duration: 9000}, {name: "radar-page", duration: 8000}, {name: "satellite-page", duration: 8000}, {name: "temperature-map-page", duration: 8000}, {name: "hourly-page", duration: 9000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "tomorrow-night-page", duration: 10000}, {name: "7day-page", duration: 13000}, {name: "almanac-page", duration: 12000}]},]
 const SINGLE = [{name: "Alert", subpages: [{name: "single-alert-page", duration: 7000}]},{name: "Now", subpages: [{name: "current-page", duration: 8000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}, {name: "hourly-page", duration: 8000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
 const MULTIPLE = [{name: "Alerts", subpages: [{name: "multiple-alerts-page", duration: 7000}]},{name: "Now", subpages: [{name: "current-page", duration: 8000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}, {name: "hourly-page", duration: 8000}]},{name: "Tonight", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Beyond", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
 const WEEKDAY = ["SUN",  "MON", "TUES", "WED", "THU", "FRI", "SAT"];
@@ -165,9 +165,12 @@ function scheduleTimeline(){
   }else{
     pageOrder = NIGHT;
   }
-  // Leave out the hourly page if the hourly forecast couldn't be loaded
-  if (hourlyForecast.length == 0) {
-    pageOrder = pageOrder.map((page) => Object.assign({}, page, {subpages: page.subpages.filter((s) => s.name != 'hourly-page')}));
+  // Leave out the hourly and satellite pages if their data couldn't be loaded
+  let leaveOut = [];
+  if (hourlyForecast.length == 0) leaveOut.push('hourly-page');
+  if (!satelliteImage) leaveOut.push('satellite-page');
+  if (leaveOut.length) {
+    pageOrder = pageOrder.map((page) => Object.assign({}, page, {subpages: page.subpages.filter((s) => !leaveOut.includes(s.name))}));
   }
   setInformation();
 }
@@ -369,6 +372,14 @@ function executePage(pageIndex, subPageIndex){
   else if(currentSubPageName == 'zoomed-radar-page'){
     startZoomedRadar();
   }
+  else if(currentSubPageName == 'satellite-page'){
+    getElement('satellite-container').replaceChildren(satelliteImage);
+    satelliteImage.start();
+  }
+  else if(currentSubPageName == 'temperature-map-page'){
+    getElement('temperature-map-container').replaceChildren(temperatureMap);
+    temperatureMap.start();
+  }
   else if(currentSubPageName == "7day-page"){
   }
 }
@@ -411,7 +422,7 @@ function skipEnding(){
 function replaySequence(){
   replaying = true;
   replayStarted = Date.now();
-  [radarImage, zoomedRadarImage].forEach((map) => map && clearTimeout(map.timer));
+  [radarImage, zoomedRadarImage, satelliteImage].forEach((map) => map && clearTimeout(map.timer));
   zoomedRadarImage = null;
   alerts = [];
   alertsActive = false;

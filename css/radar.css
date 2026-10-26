@@ -38,8 +38,25 @@
   filter: brightness(0.75) saturate(0.8);
 }
 
+/* Isolated so the frames' stacking order, used to fade one in over another, stays below
+   the lines and labels drawn on top */
 .radar-frames{
   opacity: 0.8;
+  isolation: isolate;
+}
+
+/* Satellite imagery fills the map, so it isn't see-through like the radar */
+.satellite-map .radar-frames{
+  opacity: 1;
+}
+
+/* Temperatures beside city names on the current temperatures page, see TemperatureMap.js */
+.radar-place-temperature{
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-shadow: none;
 }
 
 .radar-frame{

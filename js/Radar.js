@@ -18,16 +18,29 @@ const PLACES_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Refer
 const RADAR_TILES = 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-{time}/{z}/{x}/{y}.png';
 const RADAR_LATEST = 'https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_0.json';
 
+// Where a map's animation frames come from. Satellite.js has another one for satellite imagery.
+//   tiles: tile URL with {time}, {z}, {x} and {y}, and timeString formats a frame's time for it
+//   maxZoom: the most detailed tiles available. Less detailed ones are drawn larger to fill the map.
+//   imagery: whether to draw the Esri satellite photo under the frames
+//   load: optional, resolves a tile URL to the URL to show, such as a cached copy
+//   credit: the source, for the corner of the map
+const RADAR_SOURCE = {
+  tiles: RADAR_TILES, timeString: radarTimeString, maxZoom: 20, imagery: true,
+  frameDuration: RADAR_FRAME_DURATION, credit: 'Radar: Iowa Environmental Mesonet',
+};
+
+// Builds the radar maps, and the satellite and temperature maps that use the same view
 function fetchRadarImages(){
   // Always check with the server, so a cached copy can't hold the radar at an old time
-  fetch(RADAR_LATEST, {cache: 'no-cache', signal: AbortSignal.timeout(RADAR_LOAD_TIMEOUT)})
+  let radarTime = fetch(RADAR_LATEST, {cache: 'no-cache', signal: AbortSignal.timeout(RADAR_LOAD_TIMEOUT)})
     .then((response) => response.json())
     .then((data) => new Date(data.meta.valid))
     .catch(function(err) {
       console.warn("Radar time error, radar will not be shown", err);
       return null;
-    })
-    .then(function(latest) {
+    });
+  Promise.all([radarTime, fetchSatelliteImage()])
+    .then(function([latest, satellite]) {
       let times = [];
       if (latest) {
         for (let i = RADAR_FRAME_COUNT - 1; i >= 0; i--) {
@@ -38,6 +51,8 @@ function fetchRadarImages(){
       if(alertsActive){
         zoomedRadarImage = buildRadarMap(ZOOMED_RADAR_ZOOM, times);
       }
+      satelliteImage = satellite;
+      temperatureMap = buildTemperatureMap();
       // Alert shapes can take a few seconds to load, so draw them when they arrive
       // instead of holding up the timeline. The radar page isn't shown right away.
       fetchAlertShapes(radarBounds(RADAR_ZOOM)).then(function(shapes) {
@@ -46,7 +61,7 @@ function fetchRadarImages(){
       // The zoomed map is inside the regular map, so one request covers both.
       // Simplify the outlines to about a pixel at the zoomed map's scale.
       fetchMapFeatures(radarBounds(RADAR_ZOOM), 360 / (256 * Math.pow(2, ZOOMED_RADAR_ZOOM))).then(function(features) {
-        [radarImage, zoomedRadarImage].forEach((map) => map && drawMapFeatures(map, features));
+        [radarImage, zoomedRadarImage, satelliteImage, temperatureMap].forEach((map) => map && drawMapFeatures(map, features));
       });
       scheduleTimeline();
     });
@@ -77,9 +92,9 @@ function radarBounds(zoom){
   return [lon(left), lat(top + RADAR_HEIGHT), lon(left + RADAR_WIDTH), lat(top)];
 }
 
-function buildRadarMap(zoom, times){
+function buildRadarMap(zoom, times, source = RADAR_SOURCE){
   let map = document.createElement('div');
-  map.className = 'radar-map';
+  map.className = 'radar-map' + (source.className ? ' ' + source.className : '');
 
   let [left, top] = radarOrigin(zoom);
   map.zoom = zoom;
@@ -88,17 +103,21 @@ function buildRadarMap(zoom, times){
     return [x - left, y - top];
   };
 
-  // Adds a layer of map tiles, on top unless another layer to go below is given
-  let tileLayer = function(className, url, below) {
+  // Adds a layer of map tiles, on top unless another layer to go below is given. Tiles from a
+  // less detailed zoom level are drawn larger, and load can swap in a cached copy of a tile.
+  let tileLayer = function(className, url, below, maxZoom = zoom, load = null) {
     let layer = document.createElement('div');
     layer.className = 'radar-layer ' + className;
     layer.loading = 0;
-    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + RADAR_WIDTH - 1) / 256); tx++) {
-      for (let ty = Math.floor(top / 256); ty <= Math.floor((top + RADAR_HEIGHT - 1) / 256); ty++) {
+    let tileZoom = Math.min(zoom, maxZoom);
+    let size = 256 * Math.pow(2, zoom - tileZoom);
+    for (let tx = Math.floor(left / size); tx <= Math.floor((left + RADAR_WIDTH - 1) / size); tx++) {
+      for (let ty = Math.floor(top / size); ty <= Math.floor((top + RADAR_HEIGHT - 1) / size); ty++) {
         let tile = new Image();
         tile.className = 'radar-tile';
-        tile.style.left = (tx * 256 - left) + 'px';
-        tile.style.top = (ty * 256 - top) + 'px';
+        tile.style.left = (tx * size - left) + 'px';
+        tile.style.top = (ty * size - top) + 'px';
+        tile.style.width = tile.style.height = size + 'px';
         // Hide tiles that fail to load instead of showing a broken image. A tile that hangs
         // counts as done after a while, so it can't keep its frame out of the loop.
         layer.loading++;
@@ -107,7 +126,9 @@ function buildRadarMap(zoom, times){
         tile.onload = finish;
         tile.onerror = () => { finish(); tile.style.visibility = 'hidden'; };
         setTimeout(finish, RADAR_LOAD_TIMEOUT);
-        tile.src = url.replace('{z}', zoom).replace('{x}', tx).replace('{y}', ty);
+        let src = url.replace('{z}', tileZoom).replace('{x}', tx).replace('{y}', ty);
+        if (load) load(src).then((loaded) => tile.src = loaded, () => tile.onerror());
+        else tile.src = src;
         layer.appendChild(tile);
       }
     }
@@ -123,13 +144,14 @@ function buildRadarMap(zoom, times){
     return layer;
   };
 
-  tileLayer('radar-imagery', IMAGERY_TILES);
+  if (source.imagery) tileLayer('radar-imagery', IMAGERY_TILES);
   // The frames are kept in their own layer so the newest can be put on top while it fades in.
   // They're requested newest first, so on a slow connection the latest radar is ready soonest.
   let frameLayer = document.createElement('div');
   frameLayer.className = 'radar-layer radar-frames';
   map.appendChild(frameLayer);
-  let frames = times.slice().reverse().map((time) => frameLayer.appendChild(tileLayer('radar-frame', RADAR_TILES.replace('{time}', radarTimeString(time))))).reverse();
+  let frames = times.slice().reverse().map((time) => frameLayer.appendChild(
+    tileLayer('radar-frame', source.tiles.replace('{time}', source.timeString(time)), null, source.maxZoom, source.load))).reverse();
   let topFrame = 0;
 
   // Filled in by drawMapFeatures and drawAlerts: county and state lines, then alerts,
@@ -142,7 +164,7 @@ function buildRadarMap(zoom, times){
   // Esri's borders and places, used if the Census data can't be loaded
   map.addFallbackPlaces = function() {
     tileLayer('radar-places', PLACES_TILES, map.placeLayer);
-    map.attribution.innerHTML = 'Radar: Iowa Environmental Mesonet &middot; Imagery, borders and places: Esri';
+    map.attribution.innerHTML = [source.credit, source.imagery ? 'Imagery, borders and places: Esri' : 'Borders and places: Esri'].join(' &middot; ');
   };
 
   map.alertLegend = document.createElement('div');
@@ -156,7 +178,7 @@ function buildRadarMap(zoom, times){
 
   let attribution = document.createElement('div');
   attribution.className = 'radar-attribution';
-  attribution.innerHTML = 'Radar: Iowa Environmental Mesonet &middot; Imagery: Esri &middot; Boundaries and places: US Census Bureau';
+  attribution.innerHTML = [source.credit, source.imagery && 'Imagery: Esri', 'Boundaries and places: US Census Bureau'].filter((s) => s).join(' &middot; ');
   map.appendChild(attribution);
   map.attribution = attribution;
 
@@ -166,13 +188,13 @@ function buildRadarMap(zoom, times){
     frames.forEach((frame, i) => {
       if (i == index) {
         frame.style.zIndex = ++topFrame;
-        frame.style.transition = `opacity ${RADAR_FRAME_DURATION}ms`;
+        frame.style.transition = `opacity ${source.frameDuration}ms`;
         frame.style.visibility = 'visible';
         frame.style.opacity = 1;
       }
       else if (frame.style.visibility == 'visible') {
-        let delay = RADAR_FRAME_DURATION / 2;
-        frame.style.transition = `opacity ${RADAR_FRAME_DURATION}ms ${delay}ms, visibility 0s ${delay + RADAR_FRAME_DURATION}ms`;
+        let delay = source.frameDuration / 2;
+        frame.style.transition = `opacity ${source.frameDuration}ms ${delay}ms, visibility 0s ${delay + source.frameDuration}ms`;
         frame.style.visibility = 'hidden';
         frame.style.opacity = 0;
       }
@@ -194,7 +216,7 @@ function buildRadarMap(zoom, times){
       if (frames[index].loading == 0) showFrame(index);
       let last = index == frames.length - 1;
       index = last ? 0 : index + 1;
-      map.timer = setTimeout(next, last ? RADAR_LAST_FRAME_DURATION : RADAR_FRAME_DURATION);
+      map.timer = setTimeout(next, last ? RADAR_LAST_FRAME_DURATION : source.frameDuration);
     };
     clearTimeout(map.timer);
     next();
@@ -507,14 +529,16 @@ function drawPlaceLabels(map, places){
     let [x, y] = map.project(place.lon, place.lat);
     taken.push({x: x - 6, y: y - 6, width: 12, height: 12, owner: place});
   });
+  let maxLabels = map.showTemperatures ? TEMPERATURE_MAX_LABELS : PLACE_MAX_LABELS[map.zoom] || 30;
+  let temperatureLabels = [];
   let count = 0;
   for (let place of ordered) {
-    if (count >= (PLACE_MAX_LABELS[map.zoom] || 30) && place !== home) continue;
+    if (count >= maxLabels && place !== home) continue;
     let [x, y] = map.project(place.lon, place.lat);
     let major = place === home || place.population >= PLACE_MAJOR_POPULATION;
     context.font = major ? PLACE_MAJOR_FONT : PLACE_MINOR_FONT;
     let height = major ? 28 : 24;
-    let width = Math.ceil(context.measureText(place.name).width) + 18; // dot and gap
+    let width = Math.ceil(context.measureText(place.name).width) + 18 + (map.showTemperatures ? TEMPERATURE_LABEL_WIDTH : 0); // dot and gap
     // Try the label to the right of the dot, then to the left, then hanging below or sitting
     // above the dot so neighboring cities can both be labeled
     let right = x - 6, left = x - width + 6;
@@ -540,7 +564,21 @@ function drawPlaceLabels(map, places){
     let dot = document.createElement('span');
     dot.className = 'radar-place-dot';
     label.appendChild(dot);
-    label.appendChild(document.createTextNode(place.name));
+    if (map.showTemperatures) {
+      // The name and temperature stay in that order on either side of the dot
+      let text = document.createElement('span');
+      text.appendChild(document.createTextNode(place.name));
+      label.temperature = document.createElement('span');
+      label.temperature.className = 'radar-place-temperature';
+      text.appendChild(label.temperature);
+      label.appendChild(text);
+      label.place = place;
+      temperatureLabels.push(label);
+    }
+    else {
+      label.appendChild(document.createTextNode(place.name));
+    }
     map.placeLayer.appendChild(label);
   }
+  if (temperatureLabels.length) fillTemperatures(temperatureLabels);
 }

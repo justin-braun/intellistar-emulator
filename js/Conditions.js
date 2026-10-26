@@ -31,5 +31,7 @@ var outlookCondition = [];
 var outlookIcon = [];
 var radarImage;
 var zoomedRadarImage;
+var satelliteImage; // null when there's no satellite imagery, see Satellite.js
+var temperatureMap;
 var alertsActive;
 var alerts = [];

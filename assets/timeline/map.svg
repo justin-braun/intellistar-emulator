@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85 85">
+  <title>map</title>
+  <!-- A folded map with a temperature reading on it -->
+  <g fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round">
+    <path d="M4 16 L29 8 L56 16 L81 8 L81 69 L56 77 L29 69 L4 77 Z"/>
+    <line x1="29" y1="8" x2="29" y2="69"/>
+    <line x1="56" y1="16" x2="56" y2="77"/>
+  </g>
+  <text x="42.5" y="52" fill="#fff" font-family="sans-serif" font-weight="700" font-size="24" text-anchor="middle">72°</text>
+</svg>

@@ -25,6 +25,8 @@
   <script src="js/MainScript.js"></script>
   <script src="js/WeatherFetching.js"></script>
   <script src="js/Radar.js"></script>
+  <script src="js/Satellite.js"></script>
+  <script src="js/TemperatureMap.js"></script>
   <script src="js/Background.js"></script>
   <script src="js/Almanac.js"></script>
   <script src="js/InformationSetting.js"></script>
@@ -214,6 +216,26 @@
         <div class="page-content-container">
           <div id="radar-container" class="radar-container" style="position: absolute;">
           </div>
+        </div>
+      </div>
+
+      <!-- Satellite Page, see Satellite.js -->
+      <div id="satellite-page" class="page-container regular-page-container">
+        <div class="page-title-bar regular-text">
+          <div style="display: inline-block">Satellite</div>
+        </div>
+        <div class="page-content-container">
+          <div id="satellite-container" class="radar-container" style="position: absolute;"></div>
+        </div>
+      </div>
+
+      <!-- Current Temperatures Page, see TemperatureMap.js -->
+      <div id="temperature-map-page" class="page-container regular-page-container">
+        <div class="page-title-bar regular-text">
+          <div style="display: inline-block">Current Temperatures</div>
+        </div>
+        <div class="page-content-container">
+          <div id="temperature-map-container" class="radar-container" style="position: absolute;"></div>
         </div>
       </div>
 

@@ -32,6 +32,8 @@ Only US locations are supported, since the weather data comes from the National 
 
 This uses the published image, `ghcr.io/justin-braun/retrocast`, and restarts it automatically if the machine reboots. To build from your local copy instead, for example after making changes, run `docker compose up -d --build`. To change the port, edit `8080` in [compose.yaml](compose.yaml).
 
+To update to the latest version, run `docker compose pull && docker compose up -d`. Browsers check for a newer version every time the page loads, so the update shows up on the next loop or a normal refresh, with no need to clear the cache.
+
 ### Run it with Docker
 1. `docker run -d -p 8080:80 --restart unless-stopped ghcr.io/justin-braun/retrocast`
 2. Visit http://localhost:8080

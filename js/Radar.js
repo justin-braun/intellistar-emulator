@@ -24,6 +24,7 @@ const RADAR_LATEST = 'https://mesonet.agron.iastate.edu/data/gis/images/4326/USC
 //   imagery: whether to draw the Esri satellite photo under the frames
 //   load: optional, resolves a tile URL to the URL to show, such as a cached copy
 //   credit: the source, for the corner of the map
+//   center: optional [longitude, latitude] to center the map on, instead of the location
 const RADAR_SOURCE = {
   tiles: RADAR_TILES, timeString: radarTimeString, maxZoom: 20, imagery: true,
   frameDuration: RADAR_FRAME_DURATION, credit: 'Radar: Iowa Environmental Mesonet',
@@ -61,7 +62,7 @@ function fetchRadarImages(){
       // The zoomed map is inside the regular map, so one request covers both.
       // Simplify the outlines to about a pixel at the zoomed map's scale.
       fetchMapFeatures(radarBounds(RADAR_ZOOM), 360 / (256 * Math.pow(2, ZOOMED_RADAR_ZOOM))).then(function(features) {
-        [radarImage, zoomedRadarImage, satelliteImage, temperatureMap].forEach((map) => map && drawMapFeatures(map, features));
+        [radarImage, zoomedRadarImage, satelliteImage].forEach((map) => map && drawMapFeatures(map, features));
       });
       scheduleTimeline();
     });
@@ -77,15 +78,15 @@ function worldPixel(lon, lat, zoom){
   ];
 }
 
-// Top left world pixel of the map centered on the location
-function radarOrigin(zoom){
-  let [centerX, centerY] = worldPixel(longitude, latitude, zoom);
+// Top left world pixel of the map centered on the location, or on another point
+function radarOrigin(zoom, center = [longitude, latitude]){
+  let [centerX, centerY] = worldPixel(center[0], center[1], zoom);
   return [Math.round(centerX - RADAR_WIDTH / 2), Math.round(centerY - RADAR_HEIGHT / 2)];
 }
 
 // [west, south, east, north] of the map in degrees
-function radarBounds(zoom){
-  let [left, top] = radarOrigin(zoom);
+function radarBounds(zoom, center){
+  let [left, top] = radarOrigin(zoom, center);
   let worldSize = 256 * Math.pow(2, zoom);
   let lon = (x) => x / worldSize * 360 - 180;
   let lat = (y) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / worldSize))) * 180 / Math.PI;
@@ -96,7 +97,7 @@ function buildRadarMap(zoom, times, source = RADAR_SOURCE){
   let map = document.createElement('div');
   map.className = 'radar-map' + (source.className ? ' ' + source.className : '');
 
-  let [left, top] = radarOrigin(zoom);
+  let [left, top] = radarOrigin(zoom, source.center);
   map.zoom = zoom;
   map.project = function(lon, lat) {
     let [x, y] = worldPixel(lon, lat, zoom);
@@ -455,17 +456,7 @@ function fetchMapFeatures(bounds, tolerance){
     let cached = JSON.parse(localStorage.getItem('map-features'));
     if (cached && cached.envelope == envelope && Date.now() - cached.time < MAP_FEATURES_CACHE_MS) return Promise.resolve(cached.features);
   } catch (err) {}
-  let query = (layer, params) => fetch(`${TIGERWEB}/${layer}/query?` + new URLSearchParams(Object.assign({
-      geometry: envelope, geometryType: 'esriGeometryEnvelope', inSR: 4326, spatialRel: 'esriSpatialRelIntersects', outSR: 4326, f: 'geojson',
-    }, params)))
-    .then(function(response) {
-      if (response.status !== 200) throw new Error(`TIGERweb request error ${response.status}`);
-      return response.json();
-    })
-    .then(function(data) {
-      if (data.error) throw new Error(`TIGERweb error ${data.error.message}`);
-      return data.features;
-    });
+  let query = (layer, params) => tigerQuery(layer, envelope, params);
   let outlines = {where: '1=1', outFields: 'GEOID', returnGeometry: true, maxAllowableOffset: tolerance, geometryPrecision: 3};
   return Promise.all([
     query('State_County/MapServer/55', outlines), // Census 2020 counties
@@ -479,7 +470,7 @@ function fetchMapFeatures(bounds, tolerance){
       let features = {
         counties: counties.map((f) => f.geometry),
         states: states.map((f) => f.geometry),
-        places: places.map((f) => ({name: f.properties.BASENAME, population: f.properties.POP100, lon: Number(f.properties.INTPTLON), lat: Number(f.properties.INTPTLAT)})),
+        places: places.map(censusPlace),
       };
       try {
         localStorage.setItem('map-features', JSON.stringify({envelope, time: Date.now(), features}));
@@ -490,6 +481,26 @@ function fetchMapFeatures(bounds, tolerance){
       console.warn("Census map data error, using Esri borders and places instead", err);
       return null;
     });
+}
+
+// Resolves to the GeoJSON features of a TIGERweb layer within an envelope ("west,south,east,north")
+function tigerQuery(layer, envelope, params){
+  return fetch(`${TIGERWEB}/${layer}/query?` + new URLSearchParams(Object.assign({
+      geometry: envelope, geometryType: 'esriGeometryEnvelope', inSR: 4326, spatialRel: 'esriSpatialRelIntersects', outSR: 4326, f: 'geojson',
+    }, params)))
+    .then(function(response) {
+      if (response.status !== 200) throw new Error(`TIGERweb request error ${response.status}`);
+      return response.json();
+    })
+    .then(function(data) {
+      if (data.error) throw new Error(`TIGERweb error ${data.error.message}`);
+      return data.features;
+    });
+}
+
+function censusPlace(feature){
+  let p = feature.properties;
+  return {name: p.BASENAME, population: p.POP100, lon: Number(p.INTPTLON), lat: Number(p.INTPTLAT)};
 }
 
 function drawMapFeatures(map, features){
@@ -567,7 +578,12 @@ function drawPlaceLabels(map, places){
     if (map.showTemperatures) {
       // The name and temperature stay in that order on either side of the dot
       let text = document.createElement('span');
+      text.className = 'radar-place-text';
       text.appendChild(document.createTextNode(place.name));
+      label.icon = new Image();
+      label.icon.className = 'radar-place-icon';
+      label.icon.alt = '';
+      text.appendChild(label.icon);
       label.temperature = document.createElement('span');
       label.temperature.className = 'radar-place-temperature';
       text.appendChild(label.temperature);

@@ -11,7 +11,7 @@ A retro local forecast for any US ZIP code. Retrocast plays a minute-long foreca
 - **Forecast and 7 day outlook** from the NWS, with [Open-Meteo](https://open-meteo.com) filling in days past the NWS forecast range
 - **2 hour animated radar** with county lines, city names and active watches, warnings and advisories drawn on the map in the official NWS hazard colors
 - **2 hour satellite loop** from NOAA's GOES satellites via [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/), in color by day and infrared with city lights at night
-- **Current temperatures map** for the cities around the location, from Open-Meteo
+- **Current temperatures map** of the state, with conditions and temperatures for cities spread across it, from Open-Meteo
 - **Severe weather alerts** shown at the start of the loop, with a zoomed radar for the location
 - **Backgrounds that match the forecast**: a photo of the location, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky)
 - **Holiday touches**: greetings on holidays and the first day of each season, Christmas and fireworks photos around the holidays, and red and green colors with holiday music in November and December

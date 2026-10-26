@@ -50,25 +50,55 @@
   opacity: 1;
 }
 
-/* Conditions and temperatures beside city names on the current temperatures page, see TemperatureMap.js */
-.radar-place-text{
-  display: inline-flex;
+/* A city on the current temperatures page, see TemperatureMap.js: the condition icon and
+   temperature with the name underneath, centered on the city */
+.temperature-block{
+  position: absolute;
+  transform: translate(-50%, -20px);
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  white-space: nowrap;
+  font-family: 'Retrocast Sans', sans-serif;
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 1px 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-.radar-place-icon{
-  width: 32px;
-  height: 32px;
-  margin: -4px 0 -4px 8px;
+.temperature-row{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.temperature-icon{
+  width: 42px;
+  height: 42px;
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
 }
 
-.radar-place-temperature{
-  margin-left: 6px;
-  padding: 0 6px;
-  border-radius: 4px;
+.temperature-value{
   font-weight: 600;
+  font-size: 30px;
+  line-height: 34px;
+  padding: 0 7px;
+  border-radius: 5px;
   text-shadow: none;
+}
+
+.temperature-name{
+  font-weight: 400;
+  font-size: 19px;
+  margin-top: 2px;
+}
+
+.temperature-block-major .temperature-name{
+  font-weight: 600;
+}
+
+/* Marks the city when its block had to move a little to fit */
+.temperature-dot{
+  position: absolute;
+  transform: translate(-50%, -50%);
 }
 
 .radar-frame{

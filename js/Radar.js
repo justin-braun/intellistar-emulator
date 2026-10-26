@@ -540,16 +540,14 @@ function drawPlaceLabels(map, places){
     let [x, y] = map.project(place.lon, place.lat);
     taken.push({x: x - 6, y: y - 6, width: 12, height: 12, owner: place});
   });
-  let maxLabels = map.showTemperatures ? TEMPERATURE_MAX_LABELS : PLACE_MAX_LABELS[map.zoom] || 30;
-  let temperatureLabels = [];
   let count = 0;
   for (let place of ordered) {
-    if (count >= maxLabels && place !== home) continue;
+    if (count >= (PLACE_MAX_LABELS[map.zoom] || 30) && place !== home) continue;
     let [x, y] = map.project(place.lon, place.lat);
     let major = place === home || place.population >= PLACE_MAJOR_POPULATION;
     context.font = major ? PLACE_MAJOR_FONT : PLACE_MINOR_FONT;
     let height = major ? 28 : 24;
-    let width = Math.ceil(context.measureText(place.name).width) + 18 + (map.showTemperatures ? TEMPERATURE_LABEL_WIDTH : 0); // dot and gap
+    let width = Math.ceil(context.measureText(place.name).width) + 18; // dot and gap
     // Try the label to the right of the dot, then to the left, then hanging below or sitting
     // above the dot so neighboring cities can both be labeled
     let right = x - 6, left = x - width + 6;
@@ -575,26 +573,7 @@ function drawPlaceLabels(map, places){
     let dot = document.createElement('span');
     dot.className = 'radar-place-dot';
     label.appendChild(dot);
-    if (map.showTemperatures) {
-      // The name and temperature stay in that order on either side of the dot
-      let text = document.createElement('span');
-      text.className = 'radar-place-text';
-      text.appendChild(document.createTextNode(place.name));
-      label.icon = new Image();
-      label.icon.className = 'radar-place-icon';
-      label.icon.alt = '';
-      text.appendChild(label.icon);
-      label.temperature = document.createElement('span');
-      label.temperature.className = 'radar-place-temperature';
-      text.appendChild(label.temperature);
-      label.appendChild(text);
-      label.place = place;
-      temperatureLabels.push(label);
-    }
-    else {
-      label.appendChild(document.createTextNode(place.name));
-    }
+    label.appendChild(document.createTextNode(place.name));
     map.placeLayer.appendChild(label);
   }
-  if (temperatureLabels.length) fillTemperatures(temperatureLabels);
 }

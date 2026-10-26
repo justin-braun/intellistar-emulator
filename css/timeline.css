@@ -42,7 +42,7 @@
 
 .timeline-bar{
   margin-right: 5px;
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: var(--timeline-bar);
   width: 275px;
   height: 100%;
   float: left;
@@ -59,7 +59,7 @@
 }
 
 #progressbar{
-  background-color: white;
+  background-color: var(--progress);
   width: 0%;
   height: 100%;
   transition-property: width;

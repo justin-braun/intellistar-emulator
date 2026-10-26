@@ -101,12 +101,22 @@ function preLoadMusic(){
   }
 }
 
+// Holiday music during the holiday theme, see Seasons.js
 function randomTrack(except){
+  let holiday = holidayThemeOn();
+  let count = holiday ? HOLIDAY_TRACK_COUNT : MUSIC_TRACK_COUNT;
   let track;
   do {
-    track = String(Math.floor(Math.random() * MUSIC_TRACK_COUNT) + 1);
-  } while (track === except && MUSIC_TRACK_COUNT > 1);
+    track = (holiday ? 'holiday' : '') + (Math.floor(Math.random() * count) + 1);
+  } while (track === except && count > 1);
   return track;
+}
+
+// The first track is picked before the start screen's holiday switch can change, so pick
+// again if it doesn't match
+function matchMusicToTheme(){
+  if (!music || musicStarted || musicTrack === 'storm') return;
+  if (String(musicTrack).startsWith('holiday') != holidayThemeOn()) loadTrack(randomTrack());
 }
 
 function loadTrack(track, position){

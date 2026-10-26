@@ -1,3 +1,25 @@
+/* Colors a theme can change. The holiday theme (see js/Seasons.js) swaps them for red, green and gold. */
+:root{
+  --wordmark-backing: #1b2a47;
+  --infobar-location: rgba(0, 0, 0, 0.5);
+  --infobar-time: rgba(0, 0, 0, 0.25);
+  --title-bar: transparent;
+  --timeline-bar: rgba(255, 255, 255, 0.25);
+  --progress: white;
+  --crawl: rgba(0, 0, 0, 0.5);
+}
+
+/* White text stays readable on all of these: the red and green are about 8:1 against white */
+:root.holiday-theme{
+  --wordmark-backing: #8c1c26;
+  --infobar-location: rgba(140, 28, 38, 0.85);
+  --infobar-time: rgba(22, 92, 52, 0.85);
+  --title-bar: rgba(22, 92, 52, 0.75);
+  --timeline-bar: rgba(232, 193, 90, 0.35);
+  --progress: #e8c15a;
+  --crawl: rgba(140, 28, 38, 0.75);
+}
+
 body{
   background-color: black;
 }

@@ -4,6 +4,7 @@
   height: 65px;
   line-height: 65px;
   vertical-align: middle;
+  background-color: var(--title-bar);
 }
 
 .page-container{

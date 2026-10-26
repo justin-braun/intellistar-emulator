@@ -46,8 +46,12 @@ function setMainBackground(){
   if (condition && Math.random() < condition.chance) {
     sources.reverse();
   }
+  // Around holidays, sometimes start with a holiday photo, see Seasons.js
+  let holiday = holidayPhotos();
+  let first = holiday && Math.random() < HOLIDAY_PHOTO_CHANCE ? fetchHolidayBackground(holiday) : Promise.reject(null);
   // Try the preferred source, then the other, then a random photo
-  sources[0](condition)
+  first
+    .catch((err) => { if (err) console.warn('Background error', err); return sources[0](condition); })
     .catch((err) => { console.warn('Background error', err); return sources[1](condition); })
     .catch((err) => { console.warn('Background error', err); return {url: BACKGROUND_FALLBACK}; })
     .then(showBackground);
@@ -90,6 +94,14 @@ function fetchConditionBackground(condition){
   return fetchCommonsPhotos({generator: 'categorymembers', gcmtitle: 'Category:' + category, gcmtype: 'file', gcmlimit: 200})
     .then(function(photos) {
       if (photos.length == 0) throw new Error(`no usable photos in ${category}`);
+      return photos[Math.floor(Math.random() * photos.length)];
+    });
+}
+
+function fetchHolidayBackground(files){
+  return fetchCommonsPhotos({titles: files.map((file) => 'File:' + file).join('|')})
+    .then(function(photos) {
+      if (photos.length == 0) throw new Error('no usable holiday photos');
       return photos[Math.floor(Math.random() * photos.length)];
     });
 }

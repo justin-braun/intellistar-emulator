@@ -5,6 +5,7 @@ window.CONFIG = {
   unitField: 'imperial', // This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)
   loop: false,
   skipEnding: false, // when looping, play the pages again without the ending and greeting
+  holidayTheme: true, // red and green colors and holiday music in November and December, see Seasons.js
   locationMode: "POSTAL",
 
   // Config Functions (index.html settings manager)
@@ -48,6 +49,8 @@ window.CONFIG = {
       if (args.crawlText !== '') CONFIG.crawl = args.crawlText
       if (args.greetingText !== '') CONFIG.greeting = args.greetingText
     }
+    // Holiday greetings replace the standard greeting, but not one that was typed in
+    CONFIG.customGreeting = CONFIG.greeting != 'This is your weather'
     CONFIG.userCrawl = CONFIG.crawl // alerts replace the crawl, see replaySequence
     
     if (args['airport-code-button']==true){
@@ -71,7 +74,11 @@ window.CONFIG = {
       localStorage.setItem('loop', CONFIG.loop ? 'y' : 'n')
       CONFIG.skipEnding = getElement('skip-ending-input').checked
       localStorage.setItem('skip-ending', CONFIG.skipEnding ? 'y' : 'n')
+      CONFIG.holidayTheme = getElement('holiday-theme-input').checked
+      localStorage.setItem('holiday-theme', CONFIG.holidayTheme ? 'y' : 'n')
     }
+    applyHolidayTheme()
+    matchMusicToTheme()
 
     zipCode = args['zip-code'] || localStorage.getItem('zip-code')
     airportCode = args['airport-code'] || localStorage.getItem('airport-code')
@@ -82,7 +89,7 @@ window.CONFIG = {
   },
   load: () => {
     // A link like ?zip=55401 or ?airport=MSP starts straight away, looping unless &loop=0.
-    // &ending=0 skips the ending between loops.
+    // &ending=0 skips the ending between loops, and &holiday=0 turns off the holiday theme.
     // It's saved like a normal start, so the forecast keeps playing after each reload.
     let params = new URLSearchParams(location.search)
     let airport = params.has('airport')
@@ -96,6 +103,7 @@ window.CONFIG = {
       localStorage.setItem('location-mode', airport ? 'AIRPORT' : 'POSTAL')
       localStorage.setItem('loop', params.get('loop') === '0' ? 'n' : 'y')
       localStorage.setItem('skip-ending', params.get('ending') === '0' ? 'y' : 'n')
+      localStorage.setItem('holiday-theme', params.get('holiday') === '0' ? 'n' : 'y')
     }
 
     let settingsPrompt = getElement('settings-prompt')
@@ -154,6 +162,8 @@ window.CONFIG = {
     // Looping is on unless it was turned off
     getElement('loop-toggle-input').checked = localStorage.getItem('loop') !== 'n'
     // Skipping the ending only applies when looping
+    // The holiday theme is on unless it was turned off
+    getElement('holiday-theme-input').checked = CONFIG.holidayTheme = localStorage.getItem('holiday-theme') !== 'n'
     let skipEndingInput = getElement('skip-ending-input')
     skipEndingInput.checked = localStorage.getItem('skip-ending') === 'y'
     CONFIG.skipEnding = skipEndingInput.checked

@@ -12,6 +12,7 @@ A retro local forecast for any US ZIP code. Retrocast plays a minute-long foreca
 - **2 hour animated radar** with county lines, city names and active watches, warnings and advisories drawn on the map in the official NWS hazard colors
 - **Severe weather alerts** shown at the start of the loop, with a zoomed radar for the location
 - **Backgrounds that match the forecast**: a photo of the location, or a featured photo matching the current conditions (rain, snow, fog, lightning, clouds or a clear night sky)
+- **Holiday touches**: greetings on holidays and the first day of each season, Christmas and fireworks photos around the holidays, and red and green colors with holiday music in November and December
 - **Looping** for kiosks and spare screens, with fresh data every cycle
 - **ZIP code or airport code** (like MSP or KMSP) locations
 
@@ -52,11 +53,14 @@ To start without typing, for example on a kiosk, open Retrocast with the locatio
 - `http://localhost:8080/?airport=MSP` for an airport
 - Add `&loop=0` to play once instead of looping, like `?zip=55401&loop=0`
 - Add `&ending=0` to skip the ending between loops, like `?zip=55401&ending=0`
+- Add `&holiday=0` to turn off the holiday colors and music, like `?zip=55401&holiday=0`
 
 If the music doesn't play when looping, the browser is blocking autoplay. In Chrome you can allow it at `chrome://flags#autoplay-policy` by choosing `No user gesture is required`.
 
 ## Music
 To mute or unmute the music, click the speaker button in the top right corner or press M. Retrocast remembers the setting, including while looping. If the browser blocked the music from starting on its own, clicking the button starts it.
+
+In November and December, holiday music plays instead of the usual tracks, along with red and green colors. To keep the usual look and music, turn off **Holiday colors and music in Nov and Dec** on the start screen. Holiday greetings and photos still appear on the day, unless you've set your own greeting text.
 
 ## Customizing
 Click **Show advanced options** on the start screen to change the crawl text that scrolls along the bottom and the greeting shown at the start.

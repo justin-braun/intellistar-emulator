@@ -25,11 +25,11 @@
   float: left;
   /* The letters are cut out of the white box, so give them a solid color instead of
      letting a bright background photo show through */
-  background-color: #1b2a47;
+  background-color: var(--wordmark-backing);
 }
 
 #infobar-time-container{
-  background-color: rgba(0, 0, 0, 0.25);
+  background-color: var(--infobar-time);
 }
 
 .infobar-item-container{
@@ -38,7 +38,7 @@
   float: left;
   height: 100%;
   transition: top 0.4s;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--infobar-location);
 }
 
 .infobar-text{
